@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>毛毛窩 | 後臺管理</title>
+<title>窩貓裏 | 後臺管理</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -198,7 +198,7 @@ tr:hover td { background:rgba(255,143,163,0.05); }
   <div class="login-box">
     <div class="login-icon">🔐</div>
     <div class="login-title">後臺管理系統</div>
-    <div class="login-sub">毛毛窩 寵物褓姆</div>
+    <div class="login-sub">窩貓裏 寵物褓姆</div>
     <input type="password" class="login-input" id="pwInput" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">登入</button>
     <div class="login-err" id="loginErr">密碼錯誤，請再試一次 🐾</div>
@@ -208,7 +208,7 @@ tr:hover td { background:rgba(255,143,163,0.05); }
 <!-- ADMIN -->
 <div id="adminScreen">
   <div class="top-bar">
-    <div class="top-title">🐾 毛毛窩後臺管理</div>
+    <div class="top-title">🐾 窩貓裏後臺管理</div>
     <div class="top-actions">
       <button class="btn btn-pink" onclick="exportAll()">📥 匯出全部</button>
       <a href="index.html" class="btn btn-out">← 回前台</a>
@@ -498,7 +498,7 @@ function switchTab(tab, el){
 function exportSitter(name){
   const b=getBookings().filter(x=>x.assignedTo===name);
   if(b.length===0){ alert(`${name} 尚無接案紀錄`); return; }
-  let text=`【毛毛窩寵物褓姆】薪資明細 - ${name}\n`;
+  let text=`【窩貓裏寵物褓姆】薪資明細 - ${name}\n`;
   text+=`匯出時間：${new Date().toLocaleString('zh-TW')}\n`;
   text+=`${'='.repeat(40)}\n\n`;
   let grandTotal=0;
@@ -535,7 +535,7 @@ function copyExport(){
 function exportAll(){
   const b=getBookings();
   if(b.length===0){ alert('尚無預約資料'); return; }
-  let text='毛毛窩寵物褓姆 - 全部預約匯出\n';
+  let text='窩貓裏寵物褓姆 - 全部預約匯出\n';
   text+=`匯出時間：${new Date().toLocaleString('zh-TW')}\n${'='.repeat(50)}\n\n`;
   b.forEach((bk,i)=>{
     const {total}=calcBookingTotal(bk);
