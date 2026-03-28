@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>貓窩裏中途之家｜等待領養的毛孩</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#6baed6;--blue-light:#a8d8ea;--blue-pale:#e8f5fd;
+  --pink:#f4a0a0;--pink-light:#f9c5c5;--pink-pale:#fce8f0;
+  --peach:#fddcb5;--peach-pale:#fef6e4;
+  --green:#7dcf95;--green-pale:#e8f8ee;
+  --cream:#FDF8F2;--warm:#F5EDE0;--sand:#E8D5BC;
+  --text:#3a2c2c;--text-mid:#6b4f4f;--text-soft:#9c7c7c;
+}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;background:linear-gradient(160deg,#e8f5fd 0%,#fce8f0 45%,#fef6e4 100%);min-height:100vh;color:var(--text)}
+
+/* HEADER */
+.header{background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);border-bottom:3px solid var(--blue-light);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(168,216,234,0.2)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{font-size:1.6rem}
+.logo-name{font-size:1.1rem;font-weight:900;color:var(--blue);line-height:1}
+.logo-sub{font-size:0.65rem;color:var(--pink);letter-spacing:0.12em;font-weight:600}
+.header-right{display:flex;gap:8px;align-items:center}
+.booking-link{background:linear-gradient(135deg,var(--blue-light),var(--pink-light));padding:6px 14px;border-radius:20px;font-size:0.72rem;color:white;font-weight:700;text-decoration:none;letter-spacing:0.04em}
+.admin-link{font-size:0.72rem;color:var(--text-soft);text-decoration:none;padding:6px 10px;border:1.5px solid var(--sand);border-radius:20px}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:48px 24px 40px;text-align:center}
+.blob{position:absolute;border-radius:50%;pointer-events:none}
+.blob1{top:-40px;left:-40px;width:220px;height:220px;background:radial-gradient(circle,#c8e6f588,transparent 70%)}
+.blob2{top:0;right:-30px;width:170px;height:170px;background:radial-gradient(circle,#f9c5c588,transparent 70%)}
+.blob3{bottom:-20px;left:35%;width:140px;height:140px;background:radial-gradient(circle,#fddcb588,transparent 70%)}
+.paw{position:absolute;opacity:0.12;pointer-events:none;font-size:1.3rem}
+.hero-inner{position:relative;z-index:1}
+.hero-emoji{font-size:3rem;margin-bottom:12px;display:block}
+.hero h1{font-size:1.9rem;font-weight:900;line-height:1.3;margin-bottom:10px;background:linear-gradient(135deg,var(--blue),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{color:var(--text-mid);font-size:0.88rem;line-height:1.7;max-width:400px;margin:0 auto 20px}
+.hero-stats{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+.stat-pill{background:rgba(255,255,255,0.85);border:1.5px solid var(--blue-light);border-radius:20px;padding:6px 18px;font-size:0.8rem;color:var(--text-mid);font-weight:600}
+.stat-pill span{color:var(--blue);font-weight:900;font-size:1rem}
+
+/* FILTER */
+.filter-wrap{max-width:860px;margin:0 auto;padding:16px 16px 0}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.filter-btn{padding:7px 16px;border:2px solid var(--sand);border-radius:20px;background:white;font-family:inherit;font-size:0.78rem;cursor:pointer;font-weight:600;color:var(--text-soft);transition:all .2s}
+.filter-btn.active{border-color:var(--blue);background:var(--blue-pale);color:var(--blue)}
+.search-box{flex:1;min-width:160px;padding:8px 16px;border:2px solid var(--sand);border-radius:20px;font-family:inherit;font-size:0.82rem;outline:none;background:white;color:var(--text)}
+.search-box:focus{border-color:var(--blue)}
+
+/* GRID */
+.cats-grid{max-width:860px;margin:0 auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+
+/* CAT CARD */
+.cat-card{background:rgba(255,255,255,0.92);border-radius:22px;overflow:hidden;box-shadow:0 4px 20px rgba(168,216,234,0.2);border:1.5px solid rgba(168,216,234,0.3);transition:transform .25s,box-shadow .25s;cursor:pointer}
+.cat-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(168,216,234,0.4)}
+.cat-img-wrap{position:relative;padding-top:100%;overflow:hidden;background:linear-gradient(135deg,var(--blue-pale),var(--pink-pale))}
+.cat-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.cat-card:hover .cat-img{transform:scale(1.05)}
+.cat-img-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3.5rem;opacity:.35}
+.cat-status-badge{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:12px;font-size:0.68rem;font-weight:700;backdrop-filter:blur(6px)}
+.badge-available{background:rgba(125,207,149,0.9);color:white}
+.badge-reserved{background:rgba(244,181,106,0.9);color:white}
+.badge-adopted{background:rgba(168,168,168,0.85);color:white}
+.cat-body{padding:16px}
+.cat-name{font-size:1.05rem;font-weight:900;color:var(--text);margin-bottom:4px}
+.cat-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.meta-tag{font-size:0.7rem;padding:3px 9px;border-radius:12px;font-weight:600}
+.tag-age{background:var(--blue-pale);color:var(--blue)}
+.tag-gender-m{background:#e8f0fe;color:#3050c8}
+.tag-gender-f{background:var(--pink-pale);color:#c040a0}
+.tag-neutered{background:var(--green-pale);color:#2d7a4a}
+.cat-desc{font-size:0.8rem;color:var(--text-mid);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.personality-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.ptag{font-size:0.68rem;padding:3px 8px;border-radius:10px;background:var(--warm);color:var(--text-mid);font-weight:500}
+.adopt-btn{width:100%;padding:10px;background:linear-gradient(135deg,var(--pink),#f08080);color:white;border:none;border-radius:12px;font-family:inherit;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:0.05em}
+.adopt-btn:hover{background:linear-gradient(135deg,#f08080,var(--pink));box-shadow:0 4px 12px rgba(244,160,160,0.45)}
+.adopt-btn.reserved{background:linear-gradient(135deg,#f4b56a,#e8a030)}
+.adopt-btn.adopted{background:linear-gradient(135deg,#aaa,#888);cursor:default}
+
+/* LOADING / EMPTY */
+.loading-wrap{text-align:center;padding:60px 20px;color:var(--text-soft)}
+.loading-icon{font-size:2.5rem;margin-bottom:12px;display:block;animation:spin 1.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-wrap{text-align:center;padding:60px 20px;color:var(--text-soft)}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+
+/* MODAL - Cat Detail */
+.overlay{display:none;position:fixed;inset:0;background:rgba(80,120,160,0.45);backdrop-filter:blur(6px);align-items:flex-start;justify-content:center;z-index:200;overflow-y:auto;padding:20px}
+.overlay.show{display:flex}
+.modal{background:white;border-radius:24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(107,174,214,0.35);border:2px solid var(--blue-light);animation:popIn .3s cubic-bezier(.34,1.56,.64,1);margin:auto}
+@keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-img-wrap{position:relative;padding-top:60%;border-radius:22px 22px 0 0;overflow:hidden;background:linear-gradient(135deg,var(--blue-pale),var(--pink-pale))}
+.modal-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.modal-img-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:.3}
+.modal-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.9);border:none;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text-mid)}
+.modal-body{padding:22px}
+.modal-name{font-size:1.4rem;font-weight:900;color:var(--text);margin-bottom:8px}
+.modal-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.modal-section{margin-bottom:14px}
+.modal-label{font-size:0.75rem;font-weight:700;color:var(--text-soft);letter-spacing:0.08em;margin-bottom:5px}
+.modal-text{font-size:0.86rem;color:var(--text-mid);line-height:1.7}
+.modal-health{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.health-item{background:var(--cream);border-radius:10px;padding:10px 12px;font-size:0.78rem}
+.health-item-label{color:var(--text-soft);margin-bottom:2px;font-size:0.7rem;font-weight:600}
+.health-item-val{color:var(--text);font-weight:700}
+.modal-adopt-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--pink),#f08080 50%,var(--peach));color:white;border:none;border-radius:14px;font-family:inherit;font-size:1rem;font-weight:900;cursor:pointer;letter-spacing:0.08em;box-shadow:0 5px 16px rgba(244,160,160,0.45);transition:transform .15s}
+.modal-adopt-btn:hover{transform:translateY(-2px)}
+.modal-adopt-btn.reserved{background:linear-gradient(135deg,#f4b56a,#e8a030)}
+.modal-adopt-btn.adopted{background:linear-gradient(135deg,#aaa,#888);cursor:default}
+.line-note{text-align:center;font-size:0.74rem;color:var(--text-soft);margin-top:8px}
+
+/* FOOTER */
+.footer{text-align:center;padding:32px 20px;font-size:0.78rem;color:var(--text-soft);line-height:1.8}
+.footer a{color:var(--blue);text-decoration:none}
+
+@media(max-width:500px){
+  .hero h1{font-size:1.5rem}
+  .cats-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .cat-body{padding:12px}
+  .cat-name{font-size:0.95rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="logo" href="#">
+    <span class="logo-icon">🐱</span>
+    <div>
+      <div class="logo-name">貓窩裏</div>
+      <div class="logo-sub">中途之家</div>
+    </div>
+  </a>
+  <div class="header-right">
+    <a class="booking-link" href="index.html">🏠 到府保姆</a>
+    <a class="admin-link" href="cats-admin.html">管理</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div>
+  <span class="paw" style="top:20px;left:12%">🐾</span>
+  <span class="paw" style="top:50px;right:14%">🐾</span>
+  <span class="paw" style="bottom:10px;left:45%">🐾</span>
+  <div class="hero-inner">
+    <span class="hero-emoji">🐱✨</span>
+    <h1>等待一個家<br>的毛孩們</h1>
+    <p class="hero-sub">每一隻貓咪都值得被愛，牠們正在中途之家等待屬於自己的永遠家庭 💕</p>
+    <div class="hero-stats">
+      <div class="stat-pill">目前收容 <span id="stat-total">—</span> 隻</div>
+      <div class="stat-pill">待領養 <span id="stat-available">—</span> 隻</div>
+    </div>
+  </div>
+</div>
+
+<!-- 篩選 -->
+<div class="filter-wrap">
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter(this,'all')">全部</button>
+    <button class="filter-btn" onclick="setFilter(this,'待領養')">🟢 待領養</button>
+    <button class="filter-btn" onclick="setFilter(this,'預約中')">🟡 預約中</button>
+    <button class="filter-btn" onclick="setFilter(this,'已領養')">🩶 已領養</button>
+    <button class="filter-btn" onclick="setFilter(this,'公')">♂ 男生</button>
+    <button class="filter-btn" onclick="setFilter(this,'女')">♀ 女生</button>
+    <input class="search-box" id="search-box" placeholder="🔍 搜尋貓咪名字…" oninput="renderCats()">
+  </div>
+</div>
+
+<!-- 貓咪卡片 -->
+<div class="cats-grid" id="cats-grid">
+  <div class="loading-wrap" style="grid-column:1/-1">
+    <span class="loading-icon">🐾</span>
+    <div>載入中…</div>
+  </div>
+</div>
+
+<!-- 貓咪詳情 Modal -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-img-wrap">
+      <div class="modal-img-placeholder" id="modal-placeholder">🐱</div>
+      <img class="modal-img" id="modal-img" src="" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('modal-placeholder').style.display='flex'">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-name" id="modal-name"></div>
+      <div class="modal-meta" id="modal-meta"></div>
+      <div class="modal-health" id="modal-health"></div>
+      <div class="modal-section">
+        <div class="modal-label">🐾 個性介紹</div>
+        <div class="modal-text" id="modal-desc"></div>
+      </div>
+      <div class="modal-section" id="modal-personality-wrap">
+        <div class="modal-label">✨ 個性標籤</div>
+        <div class="personality-tags" id="modal-ptags"></div>
+      </div>
+      <button class="modal-adopt-btn" id="modal-adopt-btn" onclick="goLine()">
+        💚 我想認識牠！聯絡領養
+      </button>
+      <div class="line-note">點擊後將開啟 LINE 官方帳號，由我們為您配對合適的毛孩 🐾</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div>🐱 貓窩裏中途之家</div>
+  <div>每一隻貓咪都有故事，每一個家庭都值得一隻好貓</div>
+  <div style="margin-top:8px"><a href="index.html">到府寵物保姆預約</a>　·　<a href="cats-admin.html">管理後台</a></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  設定區 — 照教學填入你的 Airtable 資訊
+// ══════════════════════════════════════════
+var AIRTABLE_API_KEY  = 'YOUR_AIRTABLE_API_KEY';   // ← 改這裡
+var AIRTABLE_BASE_ID  = 'YOUR_BASE_ID';             // ← 改這裡
+var AIRTABLE_TABLE    = 'Cats';                     // 資料表名稱（預設 Cats）
+
+// LINE 官方帳號（填入你的 LINE ID，例如 @catnest）
+var LINE_ID = '@YOUR_LINE_ID';                      // ← 改這裡
+
+// ══════════════════════════════════════════
+var allCats = [];
+var currentFilter = 'all';
+var currentCat = null;
+
+// 示範資料（設定 Airtable 前先用這個預覽效果）
+var DEMO_CATS = [
+  {id:'demo1', name:'橘寶', age:'1歲', gender:'公', neutered:'已結紮', status:'待領養',
+   photo:'', desc:'超級黏人的橘貓男孩，喜歡跟在人旁邊，很愛被摸下巴。個性溫和，跟其他貓咪相處也很好。',
+   personality:'親人,愛撒嬌,活潑', health:'健康', vaccine:'已施打', note:''},
+  {id:'demo2', name:'小黑', age:'3歲', gender:'女', neutered:'已結紮', status:'待領養',
+   photo:'', desc:'文靜的黑色女孩，需要一點時間熟悉新環境，熟了之後非常依賴主人。適合安靜的家庭。',
+   personality:'文靜,黏人,怕生', health:'健康', vaccine:'已施打', note:''},
+  {id:'demo3', name:'花花', age:'2歲', gender:'女', neutered:'已結紮', status:'預約中',
+   photo:'', desc:'三花小美女，個性開朗好奇，喜歡玩逗貓棒。已有預約申請中。',
+   personality:'好奇,愛玩,開朗', health:'健康', vaccine:'已施打', note:''},
+  {id:'demo4', name:'虎斑弟', age:'6個月', gender:'公', neutered:'未結紮', status:'待領養',
+   photo:'', desc:'活潑的虎斑小男孩，還在成長中，每天都在探索世界。需要耐心陪伴。',
+   personality:'活潑,好奇,調皮', health:'健康', vaccine:'已施打', note:''},
+];
+
+async function loadCats() {
+  if (AIRTABLE_API_KEY === 'YOUR_AIRTABLE_API_KEY') {
+    // 尚未設定 → 顯示示範資料
+    allCats = DEMO_CATS;
+    renderCats();
+    updateStats();
+    return;
+  }
+
+  try {
+    var url = 'https://api.airtable.com/v0/' + AIRTABLE_BASE_ID + '/' + encodeURIComponent(AIRTABLE_TABLE)
+      + '?sort[0][field]=Name&sort[0][direction]=asc';
+    var res = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + AIRTABLE_API_KEY }
+    });
+    var data = await res.json();
+    allCats = (data.records || []).map(function(r) {
+      var f = r.fields;
+      return {
+        id: r.id,
+        name: f['名字'] || '',
+        age: f['年齡'] || '',
+        gender: f['性別'] || '',
+        neutered: f['結紮狀態'] || '',
+        status: f['領養狀態'] || '待領養',
+        photo: f['照片連結'] || '',
+        desc: f['個性介紹'] || '',
+        personality: f['個性標籤'] || '',
+        health: f['健康狀況'] || '',
+        vaccine: f['疫苗'] || '',
+        note: f['備註'] || ''
+      };
+    });
+    renderCats();
+    updateStats();
+  } catch(e) {
+    document.getElementById('cats-grid').innerHTML =
+      '<div class="empty-wrap" style="grid-column:1/-1"><div class="empty-icon">😿</div><div>載入失敗，請檢查 Airtable 設定</div></div>';
+  }
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = allCats.length;
+  document.getElementById('stat-available').textContent =
+    allCats.filter(function(c){ return c.status === '待領養'; }).length;
+}
+
+function setFilter(btn, f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderCats();
+}
+
+function renderCats() {
+  var search = (document.getElementById('search-box').value || '').toLowerCase();
+  var filtered = allCats.filter(function(c) {
+    var matchF = currentFilter === 'all' || c.status === currentFilter || c.gender === currentFilter;
+    var matchS = !search || c.name.toLowerCase().includes(search);
+    return matchF && matchS;
+  });
+
+  var grid = document.getElementById('cats-grid');
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-wrap" style="grid-column:1/-1"><div class="empty-icon">🐾</div><div>目前沒有符合條件的毛孩</div></div>';
+    return;
+  }
+
+  var statusLabel = { '待領養':'待領養', '預約中':'預約中', '已領養':'已領養' };
+  var statusClass = { '待領養':'available', '預約中':'reserved', '已領養':'adopted' };
+  var btnText     = { '待領養':'💚 我想認識牠！', '預約中':'💛 已有人預約中', '已領養':'🩶 已找到新家' };
+
+  grid.innerHTML = filtered.map(function(cat) {
+    var imgHtml = cat.photo
+      ? '<img class="cat-img" src="' + cat.photo + '" alt="' + cat.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+      + '<div class="cat-img-placeholder" style="display:none">🐱</div>'
+      : '<div class="cat-img-placeholder">🐱</div>';
+
+    var ptags = cat.personality ? cat.personality.split(',').slice(0,3).map(function(p){
+      return '<span class="ptag">' + p.trim() + '</span>';
+    }).join('') : '';
+
+    var sc = statusClass[cat.status] || 'available';
+    var bc = sc === 'available' ? '' : sc;
+
+    return '<div class="cat-card" onclick="openModal(\'' + cat.id + '\')">'
+      + '<div class="cat-img-wrap">' + imgHtml
+      + '<span class="cat-status-badge badge-' + sc + '">' + (statusLabel[cat.status]||cat.status) + '</span>'
+      + '</div>'
+      + '<div class="cat-body">'
+      + '<div class="cat-name">' + cat.name + '</div>'
+      + '<div class="cat-meta">'
+      + (cat.age ? '<span class="meta-tag tag-age">🎂 ' + cat.age + '</span>' : '')
+      + (cat.gender === '公' ? '<span class="meta-tag tag-gender-m">♂ 男生</span>' : '')
+      + (cat.gender === '女' ? '<span class="meta-tag tag-gender-f">♀ 女生</span>' : '')
+      + (cat.neutered === '已結紮' ? '<span class="meta-tag tag-neutered">✂️ 已結紮</span>' : '')
+      + '</div>'
+      + (cat.desc ? '<div class="cat-desc">' + cat.desc + '</div>' : '')
+      + (ptags ? '<div class="personality-tags">' + ptags + '</div>' : '')
+      + '<button class="adopt-btn ' + bc + '">' + (btnText[cat.status]||'💚 我想認識牠！') + '</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function openModal(id) {
+  var cat = allCats.find(function(c){ return c.id === id; });
+  if (!cat) return;
+  currentCat = cat;
+
+  var sc = { '待領養':'available', '預約中':'reserved', '已領養':'adopted' };
+  var btnText = { '待領養':'💚 我想認識牠！聯絡領養', '預約中':'💛 目前已有預約，仍可登記候補', '已領養':'🩶 牠已找到新家了 ♡' };
+
+  // 圖片
+  var img = document.getElementById('modal-img');
+  var ph  = document.getElementById('modal-placeholder');
+  if (cat.photo) {
+    img.src = cat.photo; img.style.display = 'block'; ph.style.display = 'none';
+  } else {
+    img.style.display = 'none'; ph.style.display = 'flex';
+  }
+
+  document.getElementById('modal-name').textContent = cat.name;
+
+  // 標籤
+  var meta = '';
+  if (cat.age)    meta += '<span class="meta-tag tag-age">🎂 ' + cat.age + '</span>';
+  if (cat.gender==='公') meta += '<span class="meta-tag tag-gender-m">♂ 男生</span>';
+  if (cat.gender==='女') meta += '<span class="meta-tag tag-gender-f">♀ 女生</span>';
+  if (cat.neutered==='已結紮') meta += '<span class="meta-tag tag-neutered">✂️ 已結紮</span>';
+  var sc2 = sc[cat.status]||'available';
+  var sbadge = { available:'badge-available', reserved:'badge-reserved', adopted:'badge-adopted' };
+  meta += '<span class="cat-status-badge ' + sbadge[sc2] + '" style="position:static">' + (cat.status||'待領養') + '</span>';
+  document.getElementById('modal-meta').innerHTML = meta;
+
+  // 健康資訊
+  var health = '';
+  if (cat.health)  health += '<div class="health-item"><div class="health-item-label">健康狀況</div><div class="health-item-val">' + cat.health + '</div></div>';
+  if (cat.vaccine) health += '<div class="health-item"><div class="health-item-label">疫苗</div><div class="health-item-val">' + cat.vaccine + '</div></div>';
