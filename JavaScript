@@ -1,0 +1,30 @@
+const SPREADSHEET_ID = "1RCdE9UVNcCsau-k6E2wPWR8H8Mh76hMluxKjH8SZQLW2Vp7ZvZQSvDz8lRLhJwq4LLPXu0qaD9aQhR";
+
+function doGet() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheets()[0];
+  const data = sheet.getDataRange().getValues();
+  const rows = data.slice(1); // 跳過標題列
+
+  const result = rows.map(row => {
+    const name = String(row[0] || "").trim();
+    if (!name || name === "貓名字") return null;
+
+    return {
+      name: name,
+      date: String(row[1] || ""),     // 入住日期
+      sn: String(row[2] || ""),       // 編號
+      vax: String(row[3] || ""),      // 疫苗
+      worm: String(row[4] || ""),     // 驅蟲
+      fixed: String(row[5] || ""),    // 結紮
+      gender: String(row[6] || ""),   // 性別
+      color: String(row[7] || ""),    // 花色
+      age: String(row[8] || ""),      // 年紀
+      weight: String(row[9] || ""),   // 體重
+      img: "https://placehold.co/400x300/ff8fab/fff?text=" + encodeURIComponent(name)
+    };
+  }).filter(item => item !== null);
+
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
