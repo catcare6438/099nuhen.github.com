@@ -1,0 +1,2761 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🐱 貓咪愛心站 - 醫療與志工管理系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── 大地色主調 ── */
+  --earth-50:  #faf6f0;
+  --earth-100: #f2e8d8;
+  --earth-200: #e0c9a8;
+  --earth-300: #c9a87a;
+  --earth-400: #b08850;
+  --earth-500: #8b6535;
+  --earth-600: #6b4c25;
+  --sand:      #e8d5b0;
+  --sand-light:#fdf6e8;
+  --bark:      #5c3d1e;
+  --moss:      #7a9e6e;
+  --moss-light:#d6e8d0;
+  --sage:      #9db89a;
+  --terracotta:#c4714a;
+  --terra-light:#f5ddd0;
+  --wheat:     #f0d88a;
+  --wheat-light:#fef8dc;
+  --cream:     #fdf9f3;
+  --white:     #ffffff;
+
+  /* 保留功能色 */
+  --pink-50:   #fdf2ee;
+  --pink-100:  #f5ddd0;
+  --pink-200:  #e8b99a;
+  --pink-300:  #c4714a;
+  --pink-400:  #b08850;
+  --pink-500:  #8b6535;
+  --peach:     #e8b99a;
+  --peach-light:#fdf2ee;
+  --lavender:  #e8dfd0;
+  --lavender-dark:#c9a87a;
+  --mint:      #d6e8d0;
+  --mint-dark: #7a9e6e;
+  --yellow:    #fef8dc;
+  --yellow-dark:#d4a820;
+  --gray-100:  #f5f0e8;
+  --gray-200:  #e8dfd0;
+  --gray-400:  #a89880;
+  --gray-600:  #7a6855;
+  --gray-800:  #3d2e1e;
+  --red:       #c4714a;
+  --red-light: #f5ddd0;
+  --green:     #7a9e6e;
+  --green-light:#d6e8d0;
+
+  --shadow-sm: 0 2px 10px rgba(91,61,30,0.10);
+  --shadow-md: 0 4px 18px rgba(91,61,30,0.15);
+  --shadow-lg: 0 8px 32px rgba(91,61,30,0.18);
+  --radius-sm: 14px;
+  --radius-md: 20px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--earth-50);
+  color: var(--gray-800);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(224,201,168,0.35) 0%, transparent 55%),
+    radial-gradient(circle at 85% 75%, rgba(196,113,74,0.12) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='8' y='58' font-size='52' opacity='0.025'%3E🐾%3C/text%3E%3C/svg%3E");
+}
+
+/* ===== HEADER ===== */
+.app-header {
+  background: linear-gradient(135deg, #8b6535 0%, #6b4c25 50%, #5c3d1e 100%);
+  padding: 16px 20px 12px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(91,61,30,0.35);
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; }
+.app-title { font-family: 'Fredoka One', cursive; color: white; font-size: 22px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; }
+.header-date { color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 700; text-align: right; }
+.sync-badge { background: rgba(255,255,255,0.25); color: white; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; }
+.sync-dot { width: 6px; height: 6px; background: #7fff7f; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--cream);
+  box-shadow: 0 -4px 20px rgba(91,61,30,0.12);
+  display: flex; border-top: 2px solid var(--earth-200);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 4px 8px; cursor: pointer; transition: all 0.2s;
+  border: none; background: none; font-family: 'Nunito', sans-serif;
+  color: var(--gray-400); font-size: 10px; font-weight: 700; gap: 3px;
+}
+.nav-item.active { color: var(--earth-500); }
+.nav-item.active .nav-icon { transform: scale(1.15); }
+.nav-icon { font-size: 24px; transition: transform 0.2s; }
+.nav-dot { width: 5px; height: 5px; background: var(--earth-400); border-radius: 50%; opacity: 0; transition: opacity 0.2s; }
+.nav-item.active .nav-dot { opacity: 1; }
+
+/* ===== MAIN CONTENT ===== */
+.main-content { padding: 16px 16px 88px; max-width: 600px; margin: 0 auto; }
+
+/* ===== PAGES ===== */
+.page { display: none; animation: fadeSlideUp 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeSlideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 20px; color: var(--earth-500);
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; margin-top: 4px;
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: white; border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm); padding: 16px;
+  margin-bottom: 14px; border: 1.5px solid var(--earth-200);
+  transition: box-shadow 0.2s;
+}
+.card:active { box-shadow: var(--shadow-md); }
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 800;
+}
+.badge-morning { background: #fff3cd; color: #d4851a; }
+.badge-noon { background: #ffe8d4; color: #d45c1a; }
+.badge-evening { background: #e8d5f5; color: #8f4dcc; }
+.badge-status-resident { background: var(--mint); color: #27ae60; }
+.badge-status-medical { background: var(--red-light); color: var(--red); }
+.badge-status-free_roam { background: var(--lavender); color: #7b4dcc; }
+.badge-status-foster { background: var(--wheat-light); color: #8b6020; }
+.badge-status-adopted { background: var(--green-light); color: #27ae60; }
+.badge-status-pending_adoption { background: #fff0d0; color: #b06820; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  border: none; border-radius: var(--radius-sm); padding: 10px 18px;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px;
+  cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: linear-gradient(135deg, #b08850, #8b6535); color: white; box-shadow: 0 3px 12px rgba(139,101,53,0.35); }
+.btn-secondary { background: var(--earth-100); color: var(--earth-600); }
+.btn-mint { background: var(--moss-light); color: var(--moss); }
+.btn-warning { background: var(--wheat-light); color: #a07820; }
+.btn-danger { background: var(--terra-light); color: var(--terracotta); }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 10px; }
+.btn-full { width: 100%; justify-content: center; padding: 14px; font-size: 15px; border-radius: var(--radius-md); }
+
+/* ===== INPUTS ===== */
+.input-group { margin-bottom: 14px; }
+.input-label { font-size: 13px; font-weight: 800; color: var(--gray-600); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.input-field {
+  width: 100%; padding: 12px 14px; border: 2px solid var(--earth-200);
+  border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif; font-size: 14px;
+  background: var(--cream); color: var(--gray-800); outline: none; transition: border-color 0.2s;
+}
+.input-field:focus { border-color: var(--earth-400); box-shadow: 0 0 0 3px rgba(176,136,80,0.15); }
+.input-field::placeholder { color: var(--gray-400); }
+textarea.input-field { resize: vertical; min-height: 90px; }
+select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23adb5bd'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+/* ===== SEARCH ===== */
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-wrap .input-field { padding-left: 40px; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--gray-400); pointer-events: none; }
+
+/* ===== CAT CARD ===== */
+.cat-card {
+  background: white; border-radius: var(--radius-md); padding: 14px;
+  margin-bottom: 12px; border: 1.5px solid var(--earth-200);
+  box-shadow: var(--shadow-sm); display: flex; gap: 12px; align-items: flex-start;
+  cursor: pointer; transition: all 0.2s;
+}
+.cat-card:active { box-shadow: var(--shadow-md); background: var(--earth-50); }
+.cat-avatar {
+  width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+  background: var(--earth-100); display: flex; align-items: center; justify-content: center;
+  font-size: 28px; overflow: hidden; border: 3px solid var(--earth-200);
+}
+.cat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.cat-info { flex: 1; min-width: 0; }
+.cat-name { font-family: 'Fredoka One', cursive; font-size: 17px; color: var(--earth-500); margin-bottom: 4px; }
+.cat-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.cat-notes { font-size: 12px; color: var(--gray-600); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ===== MEDICINE CARD ===== */
+.med-card {
+  background: linear-gradient(135deg, var(--terra-light), white);
+  border-radius: var(--radius-md); padding: 14px;
+  border-left: 4px solid var(--terracotta); margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.med-title { font-weight: 800; font-size: 15px; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.med-timing { display: flex; gap: 6px; flex-wrap: wrap; }
+.timing-chip {
+  padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+  transition: all 0.2s; border: 2px solid transparent;
+}
+.timing-chip.morning { background: #fff3cd; color: #d4851a; }
+.timing-chip.noon { background: #ffe8d4; color: #d45c1a; }
+.timing-chip.evening { background: var(--lavender); color: #7b4dcc; }
+.timing-chip.done { opacity: 0.5; text-decoration: line-through; }
+.timing-chip.done::after { content: '✓'; margin-left: 4px; }
+
+/* ===== WEIGHT ALERT ===== */
+.weight-alert {
+  background: var(--terra-light); border-radius: var(--radius-sm);
+  padding: 10px 14px; margin-bottom: 10px;
+  border-left: 4px solid var(--terracotta); display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--terracotta);
+  animation: alertPulse 2s infinite;
+}
+@keyframes alertPulse { 0%,100%{background:var(--terra-light)} 50%{background:rgba(196,113,74,0.12)} }
+
+/* ===== BOSS INSTRUCTIONS ===== */
+.instruction-card {
+  background: white; border-radius: var(--radius-md); padding: 14px;
+  margin-bottom: 12px; border: 1.5px solid var(--pink-100); box-shadow: var(--shadow-sm);
+}
+.instruction-card.completed { opacity: 0.6; background: var(--gray-100); }
+.instruction-raw { font-size: 13px; color: var(--gray-600); margin-bottom: 10px; padding: 8px 10px; background: var(--pink-50); border-radius: 10px; }
+.instruction-tasks { display: flex; flex-direction: column; gap: 6px; }
+.task-item {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
+  padding: 6px 10px; border-radius: 10px; background: var(--gray-100); cursor: pointer;
+  transition: background 0.2s;
+}
+.task-item.done { text-decoration: line-through; color: var(--gray-400); background: var(--green-light); }
+.task-checkbox { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--pink-200); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.task-item.done .task-checkbox { background: var(--green); border-color: var(--green); color: white; font-size: 11px; }
+
+/* ===== FREE ROAM ===== */
+.free-roam-card {
+  background: linear-gradient(135deg, var(--lavender), white);
+  border-radius: var(--radius-md); padding: 14px;
+  border-left: 4px solid var(--lavender-dark); margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.new-release-badge {
+  background: linear-gradient(135deg, #c96fd4, #7b4dcc);
+  color: white; font-size: 11px; font-weight: 800;
+  padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.8} }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: white; border-radius: 28px 28px 0 0;
+  width: 100%; max-width: 600px; max-height: 90vh;
+  overflow-y: auto; padding: 20px;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle { width: 40px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 0 auto 16px; }
+.modal-title { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--pink-500); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.modal-close { position: absolute; right: 20px; top: 20px; font-size: 22px; cursor: pointer; color: var(--gray-400); background: none; border: none; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--gray-800); color: white; padding: 10px 20px;
+  border-radius: 20px; font-size: 13px; font-weight: 700; z-index: 300;
+  opacity: 0; transition: all 0.3s; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== LOADING ===== */
+.loading-spinner {
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px; flex-direction: column; gap: 12px; color: var(--pink-300);
+}
+.spinner { width: 36px; height: 36px; border: 3px solid var(--earth-100); border-top-color: var(--earth-400); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align: center; padding: 32px 20px; color: var(--gray-400); }
+.empty-state .empty-emoji { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; font-weight: 700; }
+
+/* ===== PHOTO UPLOAD ===== */
+.photo-upload {
+  border: 2px dashed var(--pink-200); border-radius: var(--radius-md);
+  padding: 20px; text-align: center; cursor: pointer;
+  background: var(--pink-50); color: var(--pink-300); font-weight: 700;
+  transition: all 0.2s;
+}
+.photo-upload:active { background: var(--pink-100); }
+.photo-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-sm); margin-top: 10px; }
+input[type="file"] { display: none; }
+
+/* ===== TIMING TABS ===== */
+.timing-tabs { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
+.timing-tab {
+  flex-shrink: 0; padding: 8px 16px; border-radius: 20px; border: 2px solid var(--earth-200);
+  background: white; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
+  cursor: pointer; transition: all 0.2s; color: var(--gray-600);
+}
+.timing-tab.active { background: linear-gradient(135deg, #b08850, #8b6535); color: white; border-color: transparent; box-shadow: 0 3px 10px rgba(139,101,53,0.3); }
+
+/* ===== APPETITE STARS ===== */
+.appetite-row { display: flex; gap: 6px; align-items: center; }
+.appetite-star { font-size: 24px; cursor: pointer; transition: transform 0.1s; opacity: 0.3; }
+.appetite-star.filled { opacity: 1; }
+.appetite-star:active { transform: scale(1.3); }
+
+/* ===== STATUS ROW ===== */
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--pink-50); font-size: 13px; }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { color: var(--gray-600); font-weight: 700; display: flex; align-items: center; gap: 5px; }
+.detail-value { font-weight: 800; color: var(--gray-800); }
+
+/* ===== PARSED TAGS ===== */
+.parsed-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.parsed-tag {
+  padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.tag-cat { background: var(--peach-light); color: #d4651a; }
+.tag-timing { background: var(--lavender); color: #7b4dcc; }
+.tag-action { background: var(--mint); color: #27ae60; }
+.tag-medicine { background: var(--red-light); color: var(--red); }
+
+/* ===== STATS ===== */
+.stats-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.stat-card { flex: 1; background: white; border-radius: var(--radius-md); padding: 14px 10px; text-align: center; box-shadow: var(--shadow-sm); border: 1.5px solid var(--earth-200); }
+.stat-number { font-family: 'Fredoka One', cursive; font-size: 28px; color: var(--earth-500); line-height: 1; }
+.stat-label { font-size: 11px; font-weight: 700; color: var(--gray-400); margin-top: 4px; }
+
+/* ===== FLOATING ACTION ===== */
+.fab {
+  position: fixed; right: 20px; bottom: 80px; z-index: 90;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #b08850, #6b4c25);
+  box-shadow: 0 4px 20px rgba(91,61,30,0.45);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; cursor: pointer; border: none;
+  transition: transform 0.2s; color: white;
+}
+.fab:active { transform: scale(0.92); }
+
+.scroll-top-btn {
+  position: fixed; right: 20px; bottom: 144px; z-index: 89;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--cream);
+  border: 2px solid var(--earth-300);
+  color: var(--earth-500);
+  box-shadow: 0 3px 12px rgba(91,61,30,0.20);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; cursor: pointer;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s, transform 0.2s;
+  font-family: 'Nunito', sans-serif;
+  line-height: 1;
+}
+.scroll-top-btn.visible { opacity: 1; pointer-events: all; }
+.scroll-top-btn:active { transform: scale(0.9); }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pink-200); border-radius: 2px; }
+
+/* ===== TOGGLE ===== */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle { width: 44px; height: 24px; background: var(--gray-200); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; border: none; }
+.toggle.on { background: var(--pink-400); }
+.toggle-thumb { width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.toggle.on .toggle-thumb { transform: translateX(20px); }
+
+/* ===== DECORATION ===== */
+.paw-deco { opacity: 0.1; font-size: 48px; position: absolute; pointer-events: none; }
+
+/* ===== SHAKE ANIMATION ===== */
+@keyframes shake {
+  0%,100%{ transform:translateX(0); }
+  20%{ transform:translateX(-8px); }
+  40%{ transform:translateX(8px); }
+  60%{ transform:translateX(-6px); }
+  80%{ transform:translateX(6px); }
+}
+
+/* ===== LOCK OVERLAY ===== */
+.page-locked {
+  position:relative; pointer-events:none;
+}
+.lock-overlay {
+  position:absolute; inset:0; z-index:50;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(255,240,245,0.82); backdrop-filter:blur(3px);
+  border-radius:var(--radius-lg);
+}
+
+/* ===== HOME SECTIONS ===== */
+.home-section {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 18px;
+  border: 2px solid var(--earth-200);
+}
+.home-section-header {
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  color: white;
+}
+.home-section-header span:first-child {
+  font-family: 'Fredoka One', cursive;
+  font-size: 17px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.home-section-sub {
+  font-size: 11px; font-weight: 700;
+  opacity: 0.85;
+  background: rgba(255,255,255,0.2);
+  padding: 3px 8px; border-radius: 12px;
+}
+.home-section-body {
+  background: white;
+  padding: 14px;
+}
+
+/* ===== FEEDING REMINDER CARD ===== */
+.feed-remind-card {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--sand-light); border: 1.5px solid var(--earth-200);
+  margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+}
+.feed-remind-card:last-child { margin-bottom: 0; }
+.feed-remind-card:active { background: var(--earth-100); }
+.feed-remind-name {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px; color: var(--earth-500);
+}
+.feed-remind-missing {
+  display: flex; gap: 5px; flex-wrap: wrap;
+}
+.feed-time-chip {
+  font-size: 11px; font-weight: 800; padding: 3px 8px;
+  border-radius: 12px; border: 1.5px solid;
+}
+.chip-morning { background:#fff8ec; color:#b06020; border-color:#e0a060; }
+.chip-noon    { background:#f5f8f0; color:#5a8040; border-color:#90b870; }
+.chip-evening { background:#f5f0e8; color:#7a5530; border-color:#c09060; }
+
+/* ===== SHIFT TABS ===== */
+.shift-tab.active {
+  background: linear-gradient(135deg, #b08850, #8b6535) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(139,101,53,0.3);
+}
+
+/* ===== SHIFT DATE CARD ===== */
+.shift-date-card {
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--earth-200);
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.shift-date-header {
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+}
+.shift-date-header.today {
+  background: linear-gradient(135deg, #b08850, #8b6535);
+  color: white;
+}
+.shift-date-header.past {
+  background: var(--earth-100);
+  color: var(--earth-600);
+}
+.shift-date-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 16px;
+}
+.shift-date-body {
+  background: white;
+  padding: 14px;
+}
+.shift-entry-item {
+  background: var(--sand-light);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--earth-300);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 13px; font-weight: 600;
+  line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+  color: var(--gray-800);
+}
+.shift-entry-item:last-child { margin-bottom: 0; }
+
+/* ===== SOP CARD ===== */
+.sop-card {
+  border-radius: var(--radius-md);
+  border: 2px solid var(--earth-200);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.sop-card-header {
+  padding: 11px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.sop-card-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px;
+  flex: 1;
+}
+.sop-card-body {
+  background: white;
+  padding: 12px 14px;
+  font-size: 13px; font-weight: 600;
+  line-height: 1.75; white-space: pre-wrap; word-break: break-word;
+  color: var(--gray-700);
+  border-top: 1px solid var(--earth-100);
+}
+.sop-category-chip {
+  font-size: 11px; font-weight: 800;
+  padding: 3px 8px; border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (min-width: 600px) {
+  .bottom-nav { left: 50%; transform: translateX(-50%); max-width: 600px; border-radius: 28px 28px 0 0; }
+  .stats-row { gap: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-top">
+    <div class="app-title">🐱 貓咪愛心站</div>
+    <div style="text-align:right">
+      <div class="header-date" id="headerDate"></div>
+      <div class="sync-badge"><span class="sync-dot"></span> <span id="syncStatus">連線中…</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <!-- PAGE: 首頁 Dashboard -->
+  <div class="page active" id="page-home">
+
+    <!-- ╔══ 統計數字 ══╗ -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-number" id="statTotal">-</div>
+        <div class="stat-label">🐱 總貓咪</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statMed">-</div>
+        <div class="stat-label">💊 需餵藥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statFeed">-</div>
+        <div class="stat-label">🍚 待記餵食</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statFree">-</div>
+        <div class="stat-label">🐾 自由活動</div>
+      </div>
+    </div>
+
+    <!-- ╔══ 緊急提醒 ══╗ -->
+    <div id="weightAlerts"></div>
+
+    <!-- ╔══ 今日餵藥 ══╗ -->
+    <div class="home-section">
+      <div class="home-section-header" style="background:linear-gradient(135deg,#c4714a,#8b4020)">
+        <span>💊 今日餵藥</span>
+        <span class="home-section-sub">點擊打勾記錄</span>
+      </div>
+      <div class="home-section-body">
+        <div class="timing-tabs" style="margin-bottom:12px">
+          <button class="timing-tab active" onclick="switchMedTiming('all',this)">全部</button>
+          <button class="timing-tab" onclick="switchMedTiming('morning',this)">🌅 早上</button>
+          <button class="timing-tab" onclick="switchMedTiming('noon',this)">☀️ 中午</button>
+          <button class="timing-tab" onclick="switchMedTiming('evening',this)">🌙 晚上</button>
+        </div>
+        <div id="medList"><div class="loading-spinner"><div class="spinner"></div><span>載入中…</span></div></div>
+      </div>
+    </div>
+
+    <!-- ╔══ 今日需記錄飲食的貓咪 ══╗ -->
+    <div class="home-section">
+      <div class="home-section-header" style="background:linear-gradient(135deg,#7a9e6e,#4a7040)">
+        <span>🍚 今日需記錄飲食</span>
+        <span class="home-section-sub">尚未登記的貓咪</span>
+      </div>
+      <div class="home-section-body">
+        <div id="feedingReminderList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ╔══ 自由活動 ══╗ -->
+    <div class="home-section">
+      <div class="home-section-header" style="background:linear-gradient(135deg,#b08850,#7a5830)">
+        <span>🐾 自由活動追蹤</span>
+        <span class="home-section-sub">出籠貓咪狀態</span>
+      </div>
+      <div class="home-section-body">
+        <div id="freeRoamList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PAGE: 交班事項 -->
+  <div class="page" id="page-boss">
+
+    <!-- ╔══ TAB 切換 ══╗ -->
+    <div style="display:flex;gap:0;margin-bottom:16px;border-radius:var(--radius-md);overflow:hidden;border:2px solid var(--earth-200);background:var(--earth-100)">
+      <button class="shift-tab active" id="tab-shift" onclick="switchShiftTab('shift',this)"
+        style="flex:1;padding:11px 6px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all 0.2s;color:var(--gray-600)">
+        📋 交班紀錄
+      </button>
+      <button class="shift-tab" id="tab-sop" onclick="switchShiftTab('sop',this)"
+        style="flex:1;padding:11px 6px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all 0.2s;color:var(--gray-600)">
+        📖 守則 SOP
+      </button>
+    </div>
+
+    <!-- ╔══ 交班紀錄頁 ══╗ -->
+    <div id="shiftPanel">
+      <!-- 管理員提示 -->
+      <div id="adminHintBoss" style="display:none;align-items:center;gap:8px;background:var(--wheat-light);
+           border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;font-weight:700;color:#8b6020;cursor:pointer;border:1px solid var(--wheat)"
+           onclick="requireAdmin(null)">
+        🔒 需要管理員登入才能新增／編輯，點此登入
+      </div>
+
+      <!-- 新增交班按鈕 -->
+      <button id="entrySubmitBtn" class="btn btn-primary btn-full" onclick="openNewShiftEntry()"
+        style="margin-bottom:14px">
+        ＋ 新增今日交班事項
+      </button>
+
+      <!-- 交班日期清單 -->
+      <div id="shiftDateList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- ╔══ 守則 SOP 頁 ══╗ -->
+    <div id="sopPanel" style="display:none">
+      <!-- 搜尋 -->
+      <div class="search-wrap" style="margin-bottom:12px">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="sopSearch" class="input-field" placeholder="搜尋守則關鍵字…" oninput="filterSOP(this.value)">
+      </div>
+
+      <!-- 管理員提示 -->
+      <div id="adminHintSOP" style="display:none;align-items:center;gap:8px;background:var(--wheat-light);
+           border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;font-weight:700;color:#8b6020;cursor:pointer;border:1px solid var(--wheat)"
+           onclick="requireAdmin(null)">
+        🔒 需要管理員登入才能新增守則，點此登入
+      </div>
+
+      <!-- 新增守則 -->
+      <div id="sopAddArea" style="display:none;background:white;border-radius:var(--radius-md);padding:14px;margin-bottom:14px;border:2px solid var(--earth-200)">
+        <div class="input-group">
+          <div class="input-label">📂 守則類別</div>
+          <select id="sopCategory" class="input-field">
+            <option value="feeding">🍚 餵食 SOP</option>
+            <option value="medication">💊 餵藥 SOP</option>
+            <option value="cleaning">🧹 清潔 SOP</option>
+            <option value="safety">🛡️ 安全守則</option>
+            <option value="emergency">🚨 緊急處理</option>
+            <option value="general">📌 一般規定</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <div class="input-label">📝 標題</div>
+          <input type="text" id="sopTitle" class="input-field" placeholder="守則標題…">
+        </div>
+        <div class="input-group">
+          <div class="input-label">📄 內容</div>
+          <textarea id="sopContent" class="input-field" style="min-height:120px;white-space:pre-wrap;line-height:1.7" placeholder="詳細說明、步驟…（Enter 換行）"></textarea>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="saveSOP()">💾 儲存守則</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('sopAddArea').style.display='none'">取消</button>
+        </div>
+      </div>
+
+      <button id="sopAddBtn" class="btn btn-primary btn-full" onclick="openAddSOP()" style="margin-bottom:14px">
+        ＋ 新增守則 SOP
+      </button>
+
+      <!-- 守則列表 -->
+      <div id="sopList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- 隱藏舊 DOM (backward compat) -->
+    <div style="display:none">
+      <div id="instructionList"></div>
+      <div id="guidelineList"></div>
+      <div id="ruleList"></div>
+      <select id="entryType"><option value="instruction">指令</option><option value="guideline">規範</option><option value="rule">規矩</option></select>
+      <textarea id="unifiedInput"></textarea>
+      <div id="parsedTags"></div>
+      <div id="parsedPreview"></div>
+      <div id="entryInputLabel"></div>
+    </div>
+
+  </div>
+
+  <!-- PAGE: 醫療搜尋 -->
+  <div class="page" id="page-medical">
+    <div class="section-title">🏥 醫療紀錄查詢</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="catSearch" class="input-field" placeholder="搜尋貓咪名字…" oninput="searchCats(this.value)">
+    </div>
+    <div id="catSearchResults"></div>
+    <div id="catList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- PAGE: 餵食紀錄 -->
+  <div class="page" id="page-feeding">
+    <div class="section-title">🍚 餵食紀錄</div>
+    <div class="card" style="background:linear-gradient(135deg,var(--peach-light),white)">
+      <div class="input-group">
+        <div class="input-label">🐱 選擇貓咪</div>
+        <select id="feedingCat" class="input-field"><option value="">載入中…</option></select>
+      </div>
+      <div class="input-group">
+        <div class="input-label">⏰ 餵食時段</div>
+        <div class="timing-tabs" style="margin-bottom:0">
+          <button class="timing-tab active" data-timing="morning" onclick="selectTiming('morning',this)">🌅 早上</button>
+          <button class="timing-tab" data-timing="noon" onclick="selectTiming('noon',this)">☀️ 中午</button>
+          <button class="timing-tab" data-timing="evening" onclick="selectTiming('evening',this)">🌙 晚上</button>
+          <button class="timing-tab" data-timing="other" onclick="selectTiming('other',this)">🍽️ 其他</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="input-group" style="flex:1">
+          <div class="input-label">🥣 食物種類</div>
+          <input type="text" id="foodType" class="input-field" placeholder="例：主食罐、乾糧…">
+        </div>
+        <div class="input-group" style="flex:1">
+          <div class="input-label">📏 食量</div>
+          <input type="text" id="foodAmount" class="input-field" placeholder="例：1罐、半碗…">
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">😋 食慾評分</div>
+        <div class="appetite-row" id="appetiteStars">
+          <span class="appetite-star" data-val="1" onclick="setAppetite(1)">⭐</span>
+          <span class="appetite-star" data-val="2" onclick="setAppetite(2)">⭐</span>
+          <span class="appetite-star" data-val="3" onclick="setAppetite(3)">⭐</span>
+          <span class="appetite-star" data-val="4" onclick="setAppetite(4)">⭐</span>
+          <span class="appetite-star" data-val="5" onclick="setAppetite(5)">⭐</span>
+          <span id="appetiteLabel" style="font-size:12px;color:var(--gray-400);font-weight:700">點擊評分</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">📸 上傳照片</div>
+        <div class="photo-upload" onclick="document.getElementById('feedPhoto').click()">
+          <div id="photoPreviewArea">📷 點擊上傳餵食照片</div>
+        </div>
+        <input type="file" id="feedPhoto" accept="image/*" onchange="previewPhoto(this)">
+      </div>
+      <div class="input-group">
+        <div class="input-label">📝 備注</div>
+        <input type="text" id="feedNotes" class="input-field" placeholder="有沒有異常？">
+      </div>
+      <div class="input-group">
+        <div class="input-label">👤 志工姓名</div>
+        <input type="text" id="volunteerName" class="input-field" placeholder="您的名字" value="">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="submitFeedingLog()">💾 儲存餵食紀錄</button>
+    </div>
+
+    <div class="section-title" style="margin-top:4px">📊 今日餵食記錄</div>
+    <div id="todayFeedingList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+  </div>
+
+  <!-- PAGE: 貓咪管理 -->
+  <div class="page" id="page-cats">
+    <div class="section-title">🐾 貓咪名單</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="catListSearch" class="input-field" placeholder="搜尋貓咪…" oninput="filterCatList(this.value)">
+    </div>
+    <div id="fullCatList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+  </div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchPage('home',this)"><span class="nav-icon">🏠</span><span>首頁</span><div class="nav-dot"></div></button>
+  <button class="nav-item" onclick="switchPage('boss',this)"><span class="nav-icon">📋</span><span>交班</span><div class="nav-dot"></div></button>
+  <button class="nav-item" onclick="switchPage('medical',this)"><span class="nav-icon">🏥</span><span>醫療</span><div class="nav-dot"></div></button>
+  <button class="nav-item" onclick="switchPage('feeding',this)"><span class="nav-icon">🍚</span><span>餵食</span><div class="nav-dot"></div></button>
+  <button class="nav-item" onclick="switchPage('cats',this)"><span class="nav-icon">🐱</span><span>名單</span><div class="nav-dot"></div></button>
+</nav>
+
+<!-- FAB -->
+<button class="fab" id="fabBtn" onclick="adminGateAddModal()">＋</button>
+
+<!-- SCROLL TO TOP -->
+<button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()" title="回到最上">
+  ↑
+</button>
+
+<!-- MODAL: Add Cat -->
+<div class="modal-overlay" id="addCatModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('addCatModal')">✕</button>
+    <div class="modal-title" id="addModalTitle">🐱 新增貓咪</div>
+    <div id="addModalContent"></div>
+  </div>
+</div>
+
+<!-- MODAL: Cat Detail -->
+<div class="modal-overlay" id="catDetailModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('catDetailModal')">✕</button>
+    <div class="modal-title" id="catDetailTitle">🐱 貓咪資料</div>
+    <div id="catDetailContent"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: Admin Login -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-sheet" style="padding-bottom:32px">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:52px;margin-bottom:8px">🔐</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--pink-500)">管理員驗證</div>
+      <div style="font-size:13px;color:var(--gray-400);margin-top:4px">此功能僅限管理員操作</div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">🔑 管理員密碼</div>
+      <input type="password" id="adminPwInput" class="input-field"
+        placeholder="請輸入密碼" style="text-align:center;font-size:20px;letter-spacing:6px"
+        onkeydown="if(event.key==='Enter')submitAdminPw()">
+    </div>
+    <div id="adminPwError" style="color:var(--red);font-size:12px;font-weight:700;text-align:center;margin:-6px 0 10px;display:none">
+      ❌ 密碼錯誤，請再試一次
+    </div>
+    <button class="btn btn-primary btn-full" onclick="submitAdminPw()">🔓 驗證登入</button>
+    <button class="btn btn-full" style="background:var(--gray-100);color:var(--gray-600);margin-top:8px" onclick="closeModal('adminModal')">取消</button>
+  </div>
+</div>
+
+<!-- ADMIN BADGE in header (shown when logged in) -->
+
+<script>
+// ===== SUPABASE INIT =====
+const SUPABASE_URL = 'https://raupmwembebxoxzmdppe.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_84WIu59Amgf_k0GVIJZ4Ow_ivEBpZRR';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ===== STATE =====
+let allCats = [];
+let allMedLogs = [];
+let currentMedTiming = 'all';
+let selectedTiming = 'morning';
+let selectedAppetite = 0;
+let photoFile = null;
+let catPhotoFile = null;
+let currentPage = 'home';
+let doneMedItems = {};
+
+// ===== ADMIN AUTH =====
+const ADMIN_PW = '666';
+let isAdmin = false;
+let adminPendingPage = null;
+let adminPendingBtn  = null;
+
+function requireAdmin(callbackFn) {
+  if (isAdmin) { callbackFn && callbackFn(); return; }
+  window._adminCallback = callbackFn || null;
+  document.getElementById('adminPwInput').value = '';
+  document.getElementById('adminPwError').style.display = 'none';
+  document.getElementById('adminModal').classList.add('open');
+  setTimeout(() => document.getElementById('adminPwInput').focus(), 350);
+}
+
+function submitAdminPw() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (pw === ADMIN_PW) {
+    isAdmin = true;
+    document.getElementById('adminModal').classList.remove('open');
+    showAdminBadge();
+    showToast('🔓 管理員已登入');
+    // 更新當前頁面鎖定狀態
+    if (currentPage === 'boss') updateBossPageLock();
+    if (currentPage === 'cats') updateCatsPageLock();
+    // 執行等待中的動作
+    const cb = window._adminCallback || window._pendingModalFn;
+    window._adminCallback = null;
+    window._pendingModalFn = null;
+    if (cb) setTimeout(cb, 150);
+  } else {
+    document.getElementById('adminPwError').style.display = 'block';
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwInput').focus();
+    const inp = document.getElementById('adminPwInput');
+    inp.style.animation = 'shake 0.4s ease';
+    setTimeout(() => inp.style.animation = '', 400);
+  }
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  removeAdminBadge();
+  showToast('🔒 已登出管理員');
+  // 停在當前頁，只更新輸入區的鎖定狀態
+  if (currentPage === 'boss') updateBossPageLock();
+  if (currentPage === 'cats') updateCatsPageLock();
+}
+
+function showAdminBadge() {
+  let badge = document.getElementById('adminBadge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'adminBadge';
+    badge.style.cssText = 'position:fixed;top:12px;left:16px;z-index:200;background:rgba(255,255,255,0.25);' +
+      'color:white;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;' +
+      'display:flex;align-items:center;gap:5px;cursor:pointer;backdrop-filter:blur(4px);' +
+      'border:1px solid rgba(255,255,255,0.4)';
+    badge.innerHTML = '🔓 管理員 <span style="opacity:0.7;font-size:10px">登出</span>';
+    badge.onclick = () => {
+      if (confirm('確定要登出管理員嗎？')) logoutAdmin();
+    };
+    document.body.appendChild(badge);
+  }
+  badge.style.display = 'flex';
+}
+
+function removeAdminBadge() {
+  const badge = document.getElementById('adminBadge');
+  if (badge) badge.style.display = 'none';
+}
+
+// ===== PAGE LOCK UI =====
+function updateBossPageLock() {
+  const hint    = document.getElementById('adminHintBoss');
+  const hintSOP = document.getElementById('adminHintSOP');
+  const btn     = document.getElementById('entrySubmitBtn');
+  const sopBtn  = document.getElementById('sopAddBtn');
+  if (isAdmin) {
+    if (hint)    hint.style.display    = 'none';
+    if (hintSOP) hintSOP.style.display = 'none';
+    if (btn)     { btn.disabled = false; btn.style.opacity = '1'; }
+    if (sopBtn)  { sopBtn.disabled = false; sopBtn.style.opacity = '1'; }
+  } else {
+    if (hint)    hint.style.display    = 'flex';
+    if (hintSOP) hintSOP.style.display = 'flex';
+    if (btn)     { btn.disabled = true; btn.style.opacity = '0.5'; }
+    if (sopBtn)  { sopBtn.disabled = true; sopBtn.style.opacity = '0.5'; }
+  }
+}
+
+function updateCatsPageLock() {
+  const fab  = document.getElementById('fabBtn');
+  const hint = document.getElementById('adminHintCats');
+  if (!fab) return;
+  if (isAdmin) {
+    fab.style.opacity = '1';
+    if (hint) hint.style.display = 'none';
+  } else {
+    fab.style.opacity = '0.5';
+    if (hint) hint.style.display = 'flex';
+  }
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+  updateHeaderDate();
+  await testConnection();
+  await loadDashboard();
+  loadFeedingCatSelect();
+  loadTodayFeeding();
+  loadShiftLog();
+  loadSOP();
+  loadAllCats();
+  loadMedPage();
+  updateBossPageLock();
+  updateCatsPageLock();
+});
+
+async function testConnection() {
+  try {
+    const { error } = await db.from('cats').select('id').limit(1);
+    document.getElementById('syncStatus').textContent = error ? '連線錯誤' : '已同步';
+  } catch(e) {
+    document.getElementById('syncStatus').textContent = '離線模式';
+  }
+}
+
+function updateHeaderDate() {
+  const now = new Date();
+  const days = ['日','一','二','三','四','五','六'];
+  document.getElementById('headerDate').textContent =
+    `${now.getMonth()+1}/${now.getDate()} 星期${days[now.getDay()]}`;
+}
+
+// ===== PAGE NAVIGATION =====
+function switchPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+  currentPage = page;
+  const fabBtn = document.getElementById('fabBtn');
+  fabBtn.style.display = (page === 'cats' || page === 'medical') ? 'flex' : 'none';
+  if (page === 'home') loadDashboard();
+  if (page === 'feeding') { loadFeedingCatSelect(); loadTodayFeeding(); }
+  if (page === 'boss') { loadShiftLog(); loadSOP(); updateBossPageLock(); }
+  if (page === 'cats') { loadAllCats(); updateCatsPageLock(); }
+  if (page === 'medical') { loadAllCats(); renderMedPage(); }
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  try {
+    const [catsRes, medRes] = await Promise.all([
+      db.from('cats').select('*').order('name'),
+      db.from('medical_logs').select('*').eq('log_type','medication')
+    ]);
+    allCats = catsRes.data || [];
+    allMedLogs = medRes.data || [];
+
+    const freeCount = allCats.filter(c => c.status === 'free_roam').length;
+    const medCats = new Set(allMedLogs.filter(m => m.medicine_timing?.length > 0).map(m => m.cat_id));
+    document.getElementById('statTotal').textContent = allCats.length;
+    document.getElementById('statMed').textContent = medCats.size;
+    document.getElementById('statFree').textContent = freeCount;
+
+    renderMedList();
+    renderFreeRoam();
+    await checkWeightAlerts();
+    await loadFeedingReminders();
+  } catch(e) { showToast('⚠️ 載入失敗：' + e.message, true); }
+}
+
+function renderMedList() {
+  const container = document.getElementById('medList');
+  const timingLabels = { morning:'🌅 早上', noon:'☀️ 中午', evening:'🌙 晚上' };
+  const filteredMeds = allMedLogs.filter(m => {
+    if (!m.medicine_timing || m.medicine_timing.length === 0) return false;
+    if (currentMedTiming === 'all') return true;
+    return m.medicine_timing.includes(currentMedTiming);
+  });
+  if (filteredMeds.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-emoji">💊</div><p>目前沒有需要餵藥的貓咪</p></div>`;
+    return;
+  }
+  const catMap = Object.fromEntries(allCats.map(c => [c.id, c]));
+  container.innerHTML = filteredMeds.map(med => {
+    const cat = catMap[med.cat_id] || { name: '未知貓咪' };
+    const timings = (med.medicine_timing || []).map(t => {
+      const key = `${med.id}-${t}`;
+      const done = doneMedItems[key];
+      return `<span class="timing-chip ${t} ${done?'done':''}" onclick="toggleMedDone('${med.id}','${t}')">
+        ${timingLabels[t] || t}
+      </span>`;
+    }).join('');
+    return `<div class="med-card">
+      <div class="med-title">🐱 ${cat.name} <span style="font-size:12px;color:var(--gray-400);font-weight:600">${med.medicine_name || '藥物'}</span></div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:8px">💊 ${med.medicine_dose || ''} ${med.bag_count ? `・剩 ${med.bag_count} 包` : ''}</div>
+      <div class="med-timing">${timings}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFreeRoam() {
+  const container = document.getElementById('freeRoamList');
+  const freeCats = allCats.filter(c => c.status === 'free_roam');
+  if (freeCats.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-emoji">🐾</div><p>目前沒有自由活動的貓咪</p></div>`;
+    return;
+  }
+  container.innerHTML = freeCats.map(cat => {
+    const releaseHours = cat.release_date ? Math.floor((Date.now() - new Date(cat.release_date)) / 3600000) : null;
+    const releaseText = releaseHours !== null ? (releaseHours < 24 ? `${releaseHours}小時前出籠` : `${Math.floor(releaseHours/24)}天前出籠`) : '';
+    return `<div class="free-roam-card" onclick="openCatDetail('${cat.id}')">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="cat-avatar">${cat.photo_url ? `<img src="${cat.photo_url}" alt="">` : '🐱'}</div>
+        <div>
+          <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#7b4dcc;margin-bottom:5px">
+            ${cat.name}
+            ${cat.is_new_release ? `<span class="new-release-badge">🌟 新出籠</span>` : ''}
+          </div>
+          ${releaseText ? `<div style="font-size:12px;color:var(--gray-600)">⏰ ${releaseText}</div>` : ''}
+          ${cat.notes ? `<div style="font-size:12px;color:var(--gray-400);margin-top:3px">${cat.notes}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadFeedingReminders() {
+  const container = document.getElementById('feedingReminderList');
+  if (!container) return;
+  try {
+    // Get cats that are resident or medical (need feeding records)
+    const activeCats = allCats.filter(c => ['resident','medical','free_roam','pending_adoption'].includes(c.status));
+    if (activeCats.length === 0) {
+      container.innerHTML = `<div class="empty-state" style="padding:16px"><div class="empty-emoji" style="font-size:32px">🎉</div><p>所有貓咪都已記錄今日飲食！</p></div>`;
+      return;
+    }
+
+    // Get today's feeding logs
+    const today = new Date().toISOString().slice(0,10);
+    const { data: logs } = await db.from('feeding_logs')
+      .select('cat_id, feeding_time')
+      .gte('fed_at', today + 'T00:00:00');
+
+    const fedMap = {};
+    (logs || []).forEach(l => {
+      if (!fedMap[l.cat_id]) fedMap[l.cat_id] = [];
+      if (!fedMap[l.cat_id].includes(l.feeding_time)) fedMap[l.cat_id].push(l.feeding_time);
+    });
+
+    const allTimings = ['morning','noon','evening'];
+    const timingLabel = { morning:'🌅 早', noon:'☀️ 午', evening:'🌙 晚' };
+    const chipClass   = { morning:'chip-morning', noon:'chip-noon', evening:'chip-evening' };
+
+    const needFeeding = activeCats.map(cat => {
+      const fed = fedMap[cat.id] || [];
+      const missing = allTimings.filter(t => !fed.includes(t));
+      return { cat, missing };
+    }).filter(x => x.missing.length > 0);
+
+    if (needFeeding.length === 0) {
+      container.innerHTML = `<div class="empty-state" style="padding:16px"><div class="empty-emoji" style="font-size:32px">🎉</div><p>所有貓咪都已記錄今日飲食！</p></div>`;
+      return;
+    }
+
+    container.innerHTML = needFeeding.map(({ cat, missing }) => `
+      <div class="feed-remind-card" onclick="switchPage('feeding', document.querySelectorAll('.nav-item')[3])">
+        <div>
+          <div class="feed-remind-name">${cat.name}</div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:1px">${{resident:'🏠 住院',medical:'🏥 治療',free_roam:'🐾 自由'}[cat.status] || ''}</div>
+        </div>
+        <div class="feed-remind-missing">
+          ${missing.map(t => `<span class="feed-time-chip ${chipClass[t]}">${timingLabel[t]}</span>`).join('')}
+        </div>
+      </div>`).join('');
+
+    // update stat
+    document.getElementById('statFeed') && (document.getElementById('statFeed').textContent = needFeeding.length);
+  } catch(e) { console.warn('feedingReminders error:', e); }
+}
+
+async function checkWeightAlerts() {
+  const container = document.getElementById('weightAlerts');
+  try {
+    const { data } = await db.from('medical_logs')
+      .select('*, cats(name)').eq('log_type','weight')
+      .not('weight_check_interval_hours','is',null);
+    
+    if (!data) return;
+    const now = Date.now();
+    const alerts = data.filter(w => {
+      if (!w.last_weight_check) return true;
+      const interval = (w.weight_check_interval_hours || 48) * 3600000;
+      return (now - new Date(w.last_weight_check).getTime()) > interval;
+    });
+    container.innerHTML = alerts.map(w => {
+      const hours = w.last_weight_check ? Math.floor((now - new Date(w.last_weight_check).getTime()) / 3600000) : null;
+      return `<div class="weight-alert">
+        ⚠️ <strong>${w.cats?.name || '貓咪'}</strong> 需要量體重！
+        ${hours ? `（距上次已 ${hours} 小時）` : '（尚未記錄）'}
+        <button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="openWeightModal('${w.cat_id}')">記錄</button>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+function switchMedTiming(timing, btn) {
+  currentMedTiming = timing;
+  document.querySelectorAll('.timing-tabs .timing-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderMedList();
+}
+
+function toggleMedDone(medId, timing) {
+  const key = `${medId}-${timing}`;
+  doneMedItems[key] = !doneMedItems[key];
+  renderMedList();
+  if (doneMedItems[key]) showToast('✅ 已標記完成！');
+}
+
+// ===== BOSS INSTRUCTIONS =====
+const KEYWORDS = {
+  medication: ['藥','餵藥','吃藥','藥水','藥粉'],
+  cleaning: ['清潔','清理','整理','打掃'],
+  mopping: ['拖地','拖一拖','掃地','掃一掃'],
+  window: ['開窗','通風','關窗'],
+  adoption: ['送養','找家','領養'],
+  feeding: ['餵食','餵飯','開罐','貓糧'],
+  weight: ['量體重','體重','磅'],
+  free_roam: ['出籠','放風','自由活動'],
+};
+const TIMING_WORDS = { '早':'morning','早上':'morning','早晨':'morning','午':'noon','中午':'noon','下午':'noon','晚':'evening','晚上':'evening','夜':'evening' };
+const CAT_COLORS = ['橘','白','黑','灰','花','虎斑','三花','棕','黃'];
+
+document.getElementById('unifiedInput').addEventListener('input', function() {
+  const type = document.getElementById('entryType').value;
+  if (type !== 'instruction') { document.getElementById('parsedPreview').style.display = 'none'; return; }
+  const text = this.value.trim();
+  if (text.length < 3) { document.getElementById('parsedPreview').style.display = 'none'; return; }
+  const parsed = parseInstruction(text);
+  renderParsedPreview(parsed);
+  document.getElementById('parsedPreview').style.display = 'block';
+});
+
+function onEntryTypeChange(type) {
+  const label   = document.getElementById('entryInputLabel');
+  const btn     = document.getElementById('entrySubmitBtn');
+  const preview = document.getElementById('parsedPreview');
+  const ta      = document.getElementById('unifiedInput');
+  preview.style.display = 'none';
+  ta.value = '';
+  const cfg = {
+    instruction: {
+      label:'📝 指令內容', ph:'輸入今日指令內容…',
+      btn:'＋ 新增今日指令',
+      border:'var(--pink-300)', bg:'white',
+      btnStyle:'background:linear-gradient(135deg,#ff80b3,#ff4d94);color:white'
+    },
+    guideline: {
+      label:'📜 規範內容', ph:'輸入長期規範…（Enter 換行）',
+      btn:'📜 新增規範',
+      border:'#f6c14a', bg:'#fffdf0',
+      btnStyle:'background:linear-gradient(135deg,#f6c14a,#e8a020);color:white'
+    },
+    rule: {
+      label:'📌 規矩內容', ph:'輸入固定規矩…（Enter 換行）',
+      btn:'📌 新增規矩',
+      border:'#e74c3c', bg:'#fff8f8',
+      btnStyle:'background:linear-gradient(135deg,#e74c3c,#c0392b);color:white'
+    },
+  };
+  const c = cfg[type] || cfg.instruction;
+  label.textContent = c.label;
+  ta.placeholder    = c.ph;
+  ta.style.borderColor = c.border;
+  btn.textContent   = c.btn;
+  btn.setAttribute('style', c.btnStyle + ';width:100%;justify-content:center;padding:14px;font-size:15px;border-radius:var(--radius-md);font-weight:800;border:none;cursor:pointer;display:flex;align-items:center;gap:6px');
+}
+
+function parseInstruction(text) {
+  const result = { categories: [], timings: [], cats: [], tasks: [], raw: text };
+  for (const [cat, kws] of Object.entries(KEYWORDS)) {
+    if (kws.some(kw => text.includes(kw))) result.categories.push(cat);
+  }
+  for (const [word, timing] of Object.entries(TIMING_WORDS)) {
+    if (text.includes(word) && !result.timings.includes(timing)) result.timings.push(timing);
+  }
+  allCats.forEach(cat => {
+    if (text.includes(cat.name) || (cat.nickname && text.includes(cat.nickname)))
+      if (!result.cats.includes(cat.name)) result.cats.push(cat.name);
+  });
+  // generate tasks
+  if (result.categories.includes('medication')) {
+    const timingLabel = { morning:'早上', noon:'中午', evening:'晚上' };
+    const t = result.timings.length > 0 ? result.timings.map(t => timingLabel[t]).join('/') : '依醫囑';
+    result.tasks.push({ emoji:'💊', text: `${result.cats.join('、') || '相關貓咪'} - ${t}餵藥`, type:'medication' });
+  }
+  if (result.categories.includes('mopping')) result.tasks.push({ emoji:'🧹', text:'拖地清潔', type:'cleaning' });
+  if (result.categories.includes('cleaning')) result.tasks.push({ emoji:'🧼', text:'環境清潔', type:'cleaning' });
+  if (result.categories.includes('window')) result.tasks.push({ emoji:'🪟', text:'開關窗通風', type:'window' });
+  if (result.categories.includes('adoption')) result.tasks.push({ emoji:'🏠', text:`${result.cats.join('、') || ''} 送養事宜`, type:'adoption' });
+  if (result.categories.includes('weight')) result.tasks.push({ emoji:'⚖️', text:`${result.cats.join('、') || '貓咪'} 量體重`, type:'weight' });
+  if (result.categories.includes('free_roam')) result.tasks.push({ emoji:'🐾', text:`${result.cats.join('、') || '貓咪'} 自由活動`, type:'free_roam' });
+  if (result.tasks.length === 0) result.tasks.push({ emoji:'📌', text: text.slice(0,40), type:'general' });
+  return result;
+}
+
+function renderParsedPreview(parsed) {
+  const catLabels = parsed.cats.map(c => `<span class="parsed-tag tag-cat">🐱 ${c}</span>`).join('');
+  const timingLabels = parsed.timings.map(t => `<span class="parsed-tag tag-timing">${{morning:'🌅 早',noon:'☀️ 中',evening:'🌙 晚'}[t]}</span>`).join('');
+  const categoryLabels = parsed.categories.map(c => `<span class="parsed-tag tag-action">✨ ${c}</span>`).join('');
+  document.getElementById('parsedTags').innerHTML = catLabels + timingLabels + categoryLabels;
+  document.getElementById('parsedTasks').innerHTML = parsed.tasks.map(t =>
+    `<div class="task-item"><div class="task-checkbox"></div>${t.emoji} ${t.text}</div>`
+  ).join('');
+}
+
+async function submitEntry() {
+  if (!isAdmin) { requireAdmin(() => submitEntry()); return; }
+  const type = document.getElementById('entryType').value;
+  const text = document.getElementById('unifiedInput').value.trim();
+  if (!text) { showToast('⚠️ 請輸入內容'); return; }
+
+  if (type === 'instruction') {
+    const parsed = parseInstruction(text);
+    try {
+      const { error } = await db.from('boss_instructions').insert({
+        raw_text: text,
+        parsed_category: parsed.categories[0] || 'general',
+        parsed_cats: parsed.cats,
+        parsed_timing: parsed.timings,
+        parsed_tasks: parsed.tasks,
+        instruction_date: new Date().toISOString().slice(0,10),
+      });
+      if (error) throw error;
+      showToast('✅ 指令已新增！');
+      document.getElementById('unifiedInput').value = '';
+      document.getElementById('parsedPreview').style.display = 'none';
+      loadInstructions();
+    } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+
+  } else {
+    // guideline or rule
+    try {
+      const { error } = await db.from('boss_instructions').insert({
+        raw_text: text,
+        parsed_category: 'general',
+        parsed_tasks: [{ emoji: type === 'guideline' ? '📜' : '📌', text, fixed_type: type }],
+        parsed_cats: [],
+        parsed_timing: [],
+        instruction_date: '2099-12-31',
+      });
+      if (error) throw error;
+      showToast(type === 'guideline' ? '✅ 規範已儲存！' : '✅ 規矩已儲存！');
+      document.getElementById('unifiedInput').value = '';
+      loadFixedEntries();
+    } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+  }
+}
+
+// keep backward compat
+function parseAndSaveBossInstruction() { submitEntry(); }
+
+// ═══════════════════════════════════════════════
+// SHIFT LOG (交班紀錄)
+// ═══════════════════════════════════════════════
+let allShiftEntries = [];
+let allSOPEntries   = [];
+let currentShiftTab = 'shift';
+
+function switchShiftTab(tab, btn) {
+  currentShiftTab = tab;
+  document.querySelectorAll('.shift-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('shiftPanel').style.display = tab === 'shift' ? 'block' : 'none';
+  document.getElementById('sopPanel').style.display   = tab === 'sop'   ? 'block' : 'none';
+}
+
+async function loadShiftLog() {
+  const container = document.getElementById('shiftDateList');
+  if (!container) return;
+  container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div></div>`;
+  try {
+    const { data, error } = await db.from('boss_instructions')
+      .select('*')
+      .not('instruction_date','eq','2099-12-31')
+      .order('instruction_date', { ascending: false })
+      .order('created_at',       { ascending: false });
+    if (error) throw error;
+    allShiftEntries = data || [];
+    renderShiftLog(allShiftEntries);
+  } catch(e) { container.innerHTML = `<div class="empty-state"><p>❌ 載入失敗</p></div>`; }
+}
+
+function renderShiftLog(entries) {
+  const container = document.getElementById('shiftDateList');
+  const today = new Date().toISOString().slice(0,10);
+
+  // Group by date
+  const grouped = {};
+  entries.forEach(e => {
+    const d = e.instruction_date || e.created_at?.slice(0,10) || today;
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(e);
+  });
+
+  // Ensure today always appears
+  if (!grouped[today]) grouped[today] = [];
+
+  const sortedDates = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+
+  if (sortedDates.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-emoji">📋</div><p>還沒有交班紀錄</p></div>`;
+    return;
+  }
+
+  container.innerHTML = sortedDates.map(date => {
+    const isToday = date === today;
+    const items   = grouped[date];
+    const dateLabel = formatDateLabel(date);
+    const bodyId  = `shift-body-${date}`;
+    return `<div class="shift-date-card">
+      <div class="shift-date-header ${isToday?'today':'past'}"
+           onclick="toggleShiftBody('${bodyId}')">
+        <div>
+          <div class="shift-date-label">${isToday ? '📌 今日 ' : '📅 '}${dateLabel}</div>
+          <div style="font-size:11px;opacity:0.8;margin-top:2px">${items.length} 筆紀錄</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${isToday && isAdmin ? `<button class="btn btn-sm" style="background:rgba(255,255,255,0.25);color:white;font-size:12px;padding:5px 10px"
+            onclick="event.stopPropagation();openNewShiftEntry()">＋ 新增</button>` : ''}
+          <span id="${bodyId}-arrow" style="font-size:18px;transition:transform 0.2s">${isToday?'▾':'▸'}</span>
+        </div>
+      </div>
+      <div class="shift-date-body" id="${bodyId}" style="${isToday?'':'display:none'}">
+        ${items.length === 0
+          ? `<div style="text-align:center;color:var(--gray-400);font-size:13px;font-weight:700;padding:16px 0">今日尚無交班事項</div>`
+          : items.map(item => renderShiftItem(item, isToday)).join('')
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderShiftItem(item, editable) {
+  const text = item.raw_text ? item.raw_text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>') : '';
+  return `<div class="shift-entry-item" id="sitem-${item.id}">
+    <div id="sitem-view-${item.id}">${text}
+      ${editable && isAdmin ? `<div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-sm btn-warning" onclick="editShiftItem('${item.id}')" style="padding:5px 10px">✏️ 編輯</button>
+        <button class="btn btn-sm btn-danger"  onclick="deleteShiftItem('${item.id}')" style="padding:5px 10px">🗑️ 刪除</button>
+      </div>` : ''}
+    </div>
+    <div id="sitem-edit-${item.id}" style="display:none">
+      <textarea class="input-field" id="sitem-ta-${item.id}"
+        style="min-height:80px;white-space:pre-wrap;border-color:var(--earth-400)">${item.raw_text||''}</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-sm btn-primary" style="flex:1" onclick="saveShiftItem('${item.id}')">💾 儲存</button>
+        <button class="btn btn-sm btn-secondary" style="flex:1" onclick="cancelShiftEdit('${item.id}')">取消</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleShiftBody(bodyId) {
+  const body  = document.getElementById(bodyId);
+  const arrow = document.getElementById(bodyId + '-arrow');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display  = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▸' : '▾';
+}
+
+function openNewShiftEntry() {
+  if (!isAdmin) { requireAdmin(() => openNewShiftEntry()); return; }
+  document.getElementById('addModalTitle').textContent = '📋 新增交班事項';
+  document.getElementById('addModalContent').innerHTML = `
+    <div class="input-group">
+      <div class="input-label">📅 日期</div>
+      <input type="date" id="shiftDate" class="input-field" value="${new Date().toISOString().slice(0,10)}">
+    </div>
+    <div class="input-group">
+      <div class="input-label">📝 交班內容</div>
+      <textarea id="shiftContent" class="input-field"
+        style="min-height:140px;white-space:pre-wrap;line-height:1.7"
+        placeholder="今日注意事項、特殊狀況、下一班需注意…"></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveShiftEntry()">💾 儲存交班事項</button>
+  `;
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+async function saveShiftEntry() {
+  const date    = document.getElementById('shiftDate').value;
+  const content = document.getElementById('shiftContent').value.trim();
+  if (!content) { showToast('⚠️ 請輸入交班內容'); return; }
+  try {
+    const { error } = await db.from('boss_instructions').insert({
+      raw_text: content,
+      parsed_category: 'general',
+      parsed_tasks: [],
+      parsed_cats: [],
+      parsed_timing: [],
+      instruction_date: date,
+    });
+    if (error) throw error;
+    showToast('✅ 交班事項已儲存！');
+    closeModal('addCatModal');
+    loadShiftLog();
+  } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+}
+
+function editShiftItem(id) {
+  document.getElementById(`sitem-view-${id}`).style.display = 'none';
+  document.getElementById(`sitem-edit-${id}`).style.display = 'block';
+  document.getElementById(`sitem-ta-${id}`).focus();
+}
+function cancelShiftEdit(id) {
+  document.getElementById(`sitem-view-${id}`).style.display = 'block';
+  document.getElementById(`sitem-edit-${id}`).style.display = 'none';
+}
+async function saveShiftItem(id) {
+  const newText = document.getElementById(`sitem-ta-${id}`).value.trim();
+  if (!newText) { showToast('⚠️ 內容不可為空'); return; }
+  try {
+    const { error } = await db.from('boss_instructions').update({ raw_text: newText }).eq('id', id);
+    if (error) throw error;
+    showToast('✅ 已更新！');
+    loadShiftLog();
+  } catch(e) { showToast('❌ 更新失敗：' + e.message, true); }
+}
+async function deleteShiftItem(id) {
+  if (!confirm('確定要刪除這筆交班紀錄嗎？')) return;
+  try {
+    const { error } = await db.from('boss_instructions').delete().eq('id', id);
+    if (error) throw error;
+    showToast('🗑️ 已刪除');
+    loadShiftLog();
+  } catch(e) { showToast('❌ 刪除失敗：' + e.message, true); }
+}
+
+function formatDateLabel(dateStr) {
+  const d    = new Date(dateStr + 'T00:00:00');
+  const days = ['日','一','二','三','四','五','六'];
+  return `${d.getMonth()+1}月${d.getDate()}日（星期${days[d.getDay()]}）`;
+}
+
+// ═══════════════════════════════════════════════
+// SOP 守則
+// ═══════════════════════════════════════════════
+const SOP_CATEGORIES = {
+  feeding:    { label:'🍚 餵食 SOP',   color:'#7a9e6e', bg:'#f2f7f0' },
+  medication: { label:'💊 餵藥 SOP',   color:'#c4714a', bg:'#fdf2ee' },
+  cleaning:   { label:'🧹 清潔 SOP',   color:'#b08850', bg:'#fdf6e8' },
+  safety:     { label:'🛡️ 安全守則',   color:'#8b6535', bg:'#faf6f0' },
+  emergency:  { label:'🚨 緊急處理',   color:'#c0392b', bg:'#fff8f8' },
+  general:    { label:'📌 一般規定',   color:'#7a6855', bg:'#faf7f3' },
+};
+
+async function loadSOP() {
+  const container = document.getElementById('sopList');
+  if (!container) return;
+  container.innerHTML = `<div class="loading-spinner"><div class="spinner"></div></div>`;
+  try {
+    const { data, error } = await db.from('boss_instructions')
+      .select('*').eq('instruction_date','2099-12-31').order('created_at', { ascending: true });
+    if (error) throw error;
+    allSOPEntries = data || [];
+    renderSOP(allSOPEntries);
+  } catch(e) { container.innerHTML = `<div class="empty-state"><p>❌ 載入失敗</p></div>`; }
+}
+
+function filterSOP(query) {
+  if (!query.trim()) { renderSOP(allSOPEntries); return; }
+  const q = query.toLowerCase();
+  const filtered = allSOPEntries.filter(e =>
+    (e.raw_text||'').toLowerCase().includes(q) ||
+    ((e.parsed_tasks||[])[0]?.sop_title||'').toLowerCase().includes(q) ||
+    ((e.parsed_tasks||[])[0]?.sop_category||'').toLowerCase().includes(q)
+  );
+  renderSOP(filtered, query);
+}
+
+function renderSOP(entries, highlight) {
+  const container = document.getElementById('sopList');
+  if (!entries || entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-emoji">📖</div><p>${highlight ? '找不到符合的守則' : '還沒有守則，請新增'}</p></div>`;
+    return;
+  }
+
+  // Group by category
+  const grouped = {};
+  entries.forEach(e => {
+    const cat = (e.parsed_tasks||[])[0]?.sop_category || 'general';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(e);
+  });
+
+  const catOrder = ['feeding','medication','cleaning','safety','emergency','general'];
+  let html = '';
+  catOrder.forEach(cat => {
+    if (!grouped[cat]?.length) return;
+    const cfg = SOP_CATEGORIES[cat] || SOP_CATEGORIES.general;
+    html += `<div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-family:'Fredoka One',cursive;font-size:14px;color:${cfg.color};
+                     background:${cfg.bg};padding:5px 14px;border-radius:20px;
+                     border:2px solid ${cfg.color}44">${cfg.label}</span>
+        <div style="flex:1;height:1.5px;background:${cfg.color};opacity:0.2;border-radius:1px"></div>
+      </div>
+      ${grouped[cat].map(e => renderSOPCard(e, cfg, highlight)).join('')}
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderSOPCard(entry, cfg, highlight) {
+  const task     = (entry.parsed_tasks||[])[0] || {};
+  const title    = task.sop_title || entry.raw_text?.slice(0,30) || '守則';
+  const bodyText = entry.raw_text || '';
+  const safeBody = bodyText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+
+  let displayBody = safeBody;
+  if (highlight) {
+    const re = new RegExp(highlight.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+    displayBody = displayBody.replace(re, m => `<mark style="background:#f6c14a55;border-radius:3px">${m}</mark>`);
+  }
+
+  return `<div class="sop-card" id="sop-${entry.id}">
+    <div class="sop-card-header" style="background:${cfg.bg}">
+      <div class="sop-card-title" style="color:${cfg.color}">${title}</div>
+      ${isAdmin ? `<div style="display:flex;gap:5px">
+        <button class="btn btn-sm btn-warning" onclick="editSOPCard('${entry.id}')" style="padding:5px 9px">✏️</button>
+        <button class="btn btn-sm btn-danger"  onclick="deleteSOPCard('${entry.id}')" style="padding:5px 9px">🗑️</button>
+      </div>` : ''}
+    </div>
+    <div class="sop-card-body" id="sop-body-${entry.id}">${displayBody}</div>
+    <div id="sop-edit-${entry.id}" style="display:none;padding:12px;border-top:1px solid var(--earth-100);background:white">
+      <div class="input-group">
+        <div class="input-label">標題</div>
+        <input type="text" id="sop-ta-title-${entry.id}" class="input-field" value="${title.replace(/"/g,'&quot;')}">
+      </div>
+      <div class="input-group">
+        <div class="input-label">內容</div>
+        <textarea id="sop-ta-body-${entry.id}" class="input-field"
+          style="min-height:100px;white-space:pre-wrap">${bodyText.replace(/</g,'&lt;')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-primary" style="flex:1" onclick="saveSOPCard('${entry.id}')">💾 儲存</button>
+        <button class="btn btn-sm btn-secondary" style="flex:1" onclick="cancelSOPEdit('${entry.id}')">取消</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openAddSOP() {
+  if (!isAdmin) { requireAdmin(() => openAddSOP()); return; }
+  document.getElementById('sopAddArea').style.display = 'block';
+  document.getElementById('sopTitle').focus();
+}
+
+async function saveSOP() {
+  if (!isAdmin) { requireAdmin(() => saveSOP()); return; }
+  const cat     = document.getElementById('sopCategory').value;
+  const title   = document.getElementById('sopTitle').value.trim();
+  const body    = document.getElementById('sopContent').value.trim();
+  if (!title || !body) { showToast('⚠️ 標題和內容都要填喔'); return; }
+  try {
+    const { error } = await db.from('boss_instructions').insert({
+      raw_text: body,
+      parsed_category: 'general',
+      parsed_tasks: [{ sop_category: cat, sop_title: title }],
+      parsed_cats: [], parsed_timing: [],
+      instruction_date: '2099-12-31',
+    });
+    if (error) throw error;
+    showToast('✅ 守則已儲存！');
+    document.getElementById('sopTitle').value   = '';
+    document.getElementById('sopContent').value = '';
+    document.getElementById('sopAddArea').style.display = 'none';
+    loadSOP();
+  } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+}
+
+function editSOPCard(id) {
+  document.getElementById(`sop-body-${id}`).style.display = 'none';
+  document.getElementById(`sop-edit-${id}`).style.display = 'block';
+}
+function cancelSOPEdit(id) {
+  document.getElementById(`sop-body-${id}`).style.display = 'block';
+  document.getElementById(`sop-edit-${id}`).style.display = 'none';
+}
+async function saveSOPCard(id) {
+  if (!isAdmin) { requireAdmin(() => saveSOPCard(id)); return; }
+  const title = document.getElementById(`sop-ta-title-${id}`).value.trim();
+  const body  = document.getElementById(`sop-ta-body-${id}`).value.trim();
+  if (!title || !body) { showToast('⚠️ 標題和內容都要填'); return; }
+  const orig  = allSOPEntries.find(e => e.id === id);
+  const cat   = (orig?.parsed_tasks||[])[0]?.sop_category || 'general';
+  try {
+    const { error } = await db.from('boss_instructions').update({
+      raw_text: body,
+      parsed_tasks: [{ sop_category: cat, sop_title: title }],
+    }).eq('id', id);
+    if (error) throw error;
+    showToast('✅ 守則已更新！');
+    loadSOP();
+  } catch(e) { showToast('❌ 更新失敗：' + e.message, true); }
+}
+async function deleteSOPCard(id) {
+  if (!confirm('確定要刪除這條守則嗎？')) return;
+  try {
+    const { error } = await db.from('boss_instructions').delete().eq('id', id);
+    if (error) throw error;
+    showToast('🗑️ 守則已刪除');
+    loadSOP();
+  } catch(e) { showToast('❌ 刪除失敗：' + e.message, true); }
+}
+
+// ── backward compat stubs ──
+function loadInstructions() { loadShiftLog(); }
+function loadFixedEntries() { loadSOP(); }
+function filterInstructions() {}
+function onEntryTypeChange() {}
+function submitEntry() { openNewShiftEntry(); }
+function parseAndSaveBossInstruction() { openNewShiftEntry(); }
+
+async function completeInstruction(id) {
+  const { error } = await db.from('boss_instructions').update({
+    is_completed: true, completed_at: new Date().toISOString()
+  }).eq('id', id);
+  if (!error) { showToast('✅ 已標記完成！'); loadInstructions(); }
+}
+
+// ===== MEDICAL PAGE =====
+async function loadMedPage() {
+  await loadAllCats();
+  renderMedPage();
+}
+
+function renderMedPage() {
+  const container = document.getElementById('catList');
+  if (allCats.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-emoji">🐱</div><p>還沒有貓咪資料</p></div>`;
+    return;
+  }
+  renderCatCards(allCats, container);
+}
+
+function renderCatCards(cats, container) {
+  const statusLabel = { resident:'🏠 住院', medical:'🏥 治療中', free_roam:'🐾 自由活動', foster:'🏠 長租客', pending_adoption:'🔍 待送養', adopted:'💚 已送養' };
+  container.innerHTML = cats.map(cat => `
+    <div class="cat-card" onclick="openCatDetail('${cat.id}')">
+      <div class="cat-avatar">${cat.photo_url ? `<img src="${cat.photo_url}" alt="">` : '🐱'}</div>
+      <div class="cat-info">
+        <div class="cat-name">${cat.name}${cat.nickname ? ` <span style="font-size:13px;color:var(--gray-400)">(${cat.nickname})</span>` : ''}</div>
+        <div class="cat-meta">
+          <span class="badge badge-status-${cat.status}">${statusLabel[cat.status] || cat.status}</span>
+          ${cat.cage_number ? `<span class="badge" style="background:var(--pink-50);color:var(--pink-400)">🏠 ${cat.cage_number}</span>` : ''}
+          ${cat.for_adoption ? `<span class="badge" style="background:#e8f5e9;color:#27ae60">🏠 送養中</span>` : ''}
+        </div>
+        ${cat.notes ? `<div class="cat-notes">📝 ${cat.notes}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+async function searchCats(query) {
+  const resultsContainer = document.getElementById('catSearchResults');
+  const listContainer = document.getElementById('catList');
+  if (!query.trim()) {
+    resultsContainer.innerHTML = '';
+    listContainer.style.display = 'block';
+    return;
+  }
+  listContainer.style.display = 'none';
+  const filtered = allCats.filter(c =>
+    c.name.includes(query) || (c.nickname && c.nickname.includes(query)) || (c.notes && c.notes.includes(query))
+  );
+  if (filtered.length === 0) {
+    resultsContainer.innerHTML = `<div class="empty-state"><div class="empty-emoji">🔍</div><p>找不到「${query}」</p></div>`;
+    return;
+  }
+  renderCatCards(filtered, resultsContainer);
+}
+
+function filterCatList(query) {
+  const filtered = query.trim() ? allCats.filter(c =>
+    c.name.includes(query) || (c.nickname && c.nickname.includes(query))
+  ) : allCats;
+  renderCatCards(filtered, document.getElementById('fullCatList'));
+}
+
+// ===== CAT DETAIL MODAL =====
+async function openCatDetail(catId) {
+  const cat = allCats.find(c => c.id === catId);
+  if (!cat) return;
+  const modal = document.getElementById('catDetailModal');
+  document.getElementById('catDetailTitle').textContent = `🐱 ${cat.name}`;
+  const content = document.getElementById('catDetailContent');
+  content.innerHTML = `<div class="loading-spinner"><div class="spinner"></div></div>`;
+  modal.classList.add('open');
+
+  try {
+    const { data: logs } = await db.from('medical_logs').select('*').eq('cat_id', catId).order('created_at', { ascending: false });
+    const medLogs = (logs || []).filter(l => l.log_type === 'medication');
+    const weightLogs = (logs || []).filter(l => l.log_type === 'weight');
+    const vaccineLogs = (logs || []).filter(l => l.log_type === 'vaccine');
+    const checkupLogs = (logs || []).filter(l => l.log_type === 'checkup');
+    const statusLabel = { resident:'🏠 住院', medical:'🏥 治療中', free_roam:'🐾 自由', foster:'🏠 長租客', pending_adoption:'🔍 待送養', pending_adoption:'🔍 待送養', adopted:'💚 已送養' };
+
+    content.innerHTML = `
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="width:80px;height:80px;border-radius:50%;background:var(--pink-100);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:42px;border:3px solid var(--pink-200);overflow:hidden">
+          ${cat.photo_url ? `<img src="${cat.photo_url}" style="width:100%;height:100%;object-fit:cover">` : '🐱'}
+        </div>
+        <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--pink-500)">${cat.name}</div>
+        ${cat.nickname ? `<div style="color:var(--gray-400);font-size:13px">${cat.nickname}</div>` : ''}
+        <span class="badge badge-status-${cat.status}" style="margin-top:8px">${statusLabel[cat.status] || cat.status}</span>
+      </div>
+      <div class="card">
+        <div class="detail-row"><span class="detail-label">🏠 籠位</span><span class="detail-value">${cat.cage_number || '無'}</span></div>
+        <div class="detail-row"><span class="detail-label">🎀 性別</span><span class="detail-value">${{male:'公',female:'母',unknown:'未知'}[cat.gender]||'-'}</span></div>
+        <div class="detail-row"><span class="detail-label">🎂 年齡</span><span class="detail-value">${cat.age_estimate || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">🎨 毛色</span><span class="detail-value">${cat.color || '-'}</span></div>
+        <div class="detail-row"><span class="detail-label">✂️ 結紮</span><span class="detail-value" style="color:${cat.is_neutered ? 'var(--moss)' : 'var(--terracotta)'}">${cat.is_neutered ? '✅ 已結紮' : '❌ 未結紮'}${cat.is_neutered && cat.neuter_date ? ` <span style="font-size:11px;color:var(--gray-400)">(${formatDate(cat.neuter_date)})</span>` : ''}</span></div>
+        ${cat.for_adoption ? `<div class="detail-row"><span class="detail-label">🏠 送養</span><span class="detail-value" style="color:var(--green)">送養中</span></div>` : ''}
+        <div id="catNotesSection-${cat.id}"><!-- notes loaded below --></div>
+      </div>
+      ${medLogs.length > 0 ? `
+        <div class="section-title" style="font-size:16px">💊 用藥資訊</div>
+        ${medLogs.map(m => `<div class="med-card">
+          <div class="med-title">💊 ${m.medicine_name || '藥物'}</div>
+          <div style="font-size:12px;color:var(--gray-600)">
+            ${m.medicine_dose ? `劑量：${m.medicine_dose}　` : ''}
+            ${m.bag_count ? `剩餘：${m.bag_count} 包` : ''}
+          </div>
+          ${m.description ? `<div style="font-size:12px;color:var(--gray-400);margin-top:6px">${m.description}</div>` : ''}
+        </div>`).join('')}
+      ` : ''}
+      ${weightLogs.length > 0 ? `
+        <div class="section-title" style="font-size:16px">⚖️ 體重紀錄</div>
+        <div class="card">
+          ${weightLogs.slice(0,3).map(w => `
+            <div class="detail-row">
+              <span class="detail-label">📅 ${w.log_date ? formatDate(w.log_date) : formatDate(w.created_at)}</span>
+              <span class="detail-value">${w.weight_kg} kg</span>
+            </div>`).join('')}
+        </div>
+      ` : ''}
+      ${vaccineLogs.length > 0 ? `
+        <div class="section-title" style="font-size:16px">💉 疫苗記錄</div>
+        <div class="card">
+          ${vaccineLogs.map(v => `
+            <div class="detail-row">
+              <span class="detail-label">💉 ${v.vaccine_name || '疫苗'}</span>
+              <span class="detail-value">${v.vaccine_date ? formatDate(v.vaccine_date) : '-'}</span>
+            </div>
+            ${v.vaccine_next_date ? `<div class="detail-row"><span class="detail-label" style="padding-left:16px">次回</span><span class="detail-value" style="color:var(--red)">${formatDate(v.vaccine_next_date)}</span></div>` : ''}`).join('')}
+        </div>
+      ` : ''}
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary" style="flex:1" onclick="openAddMedLog('${cat.id}','${cat.name}')">＋ 醫療紀錄</button>
+        <button class="btn btn-warning" style="flex:1" onclick="openAddWeightLog('${cat.id}','${cat.name}')">⚖️ 體重</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" style="flex:1" onclick="openEditCatModal('${cat.id}')">✏️ 編輯資料</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="openUpdateCatPhoto('${cat.id}','${cat.name}')">📸 換照片</button>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn btn-mint btn-full" onclick="openAddNoteModal('${cat.id}','${cat.name}')">📝 新增備注紀錄</button>
+      </div>`;
+    loadCatNotes('${cat.id}');
+  } catch(e) {
+    content.innerHTML = `<div class="empty-state"><p>❌ 載入失敗：${e.message}</p></div>`;
+  }
+}
+
+// ===== ADD CAT MODAL =====
+function adminGateAddModal() {
+  if (!isAdmin) { requireAdmin(() => openAddModal()); return; }
+  openAddModal();
+}
+
+function openAddModal() {
+  if (currentPage === 'cats' || currentPage === 'medical') {
+    openAddCatModal();
+  } else if (currentPage === 'feeding') {
+    document.getElementById('page-feeding').scrollTo(0,0);
+  }
+}
+
+function openAddCatModal() {
+  catPhotoFile = null;
+  document.getElementById('addModalTitle').textContent = '🐱 新增貓咪檔案';
+  document.getElementById('addModalContent').innerHTML = `
+    <!-- 照片上傳 -->
+    <div class="input-group">
+      <div class="input-label">📸 貓咪照片</div>
+      <input type="file" id="newCatPhoto" accept="image/*" onchange="previewCatPhoto(this)" style="display:none">
+      <div id="catPhotoUploadArea" onclick="document.getElementById('newCatPhoto').click()"
+        style="border:2px dashed var(--pink-200);border-radius:var(--radius-md);background:var(--pink-50);
+               cursor:pointer;overflow:hidden;transition:all 0.2s;position:relative;min-height:120px;
+               display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:var(--pink-300)">
+        <div id="catPhotoPreviewWrap" style="width:100%;text-align:center;padding:20px 0">
+          <div style="font-size:40px">🐱</div>
+          <div style="font-size:13px;font-weight:700;margin-top:6px">點擊上傳貓咪照片</div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:3px">支援 JPG、PNG、HEIC</div>
+        </div>
+      </div>
+      <div id="catPhotoStatus" style="font-size:11px;color:var(--gray-400);text-align:center;margin-top:5px;font-weight:700"></div>
+    </div>
+
+    <!-- 基本資料 -->
+    <div style="font-size:12px;font-weight:800;color:var(--pink-400);margin-bottom:8px;padding:6px 10px;background:var(--pink-50);border-radius:10px">🐾 基本資料</div>
+    <div class="input-group"><div class="input-label">🐱 名字 *</div><input type="text" id="newCatName" class="input-field" placeholder="貓咪名字"></div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1"><div class="input-label">🎀 性別</div>
+        <select id="newCatGender" class="input-field">
+          <option value="unknown">未知</option>
+          <option value="male">公</option>
+          <option value="female">母</option>
+        </select>
+      </div>
+      <div class="input-group" style="flex:1"><div class="input-label">📍 籠位</div>
+        <input type="text" id="newCatCage" class="input-field" placeholder="如：A1">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1"><div class="input-label">🎨 毛色</div>
+        <input type="text" id="newCatColor" class="input-field" placeholder="如：橘白">
+      </div>
+      <div class="input-group" style="flex:1"><div class="input-label">🎂 年齡</div>
+        <input type="text" id="newCatAge" class="input-field" placeholder="如：約2歲">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1">
+        <div class="input-label">⚖️ 體重 (kg)</div>
+        <input type="number" id="newCatWeight" class="input-field" placeholder="如：3.5" step="0.1" min="0">
+      </div>
+      <div class="input-group" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <div class="input-label" style="margin-bottom:10px">✂️ 是否結紮</div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;
+               background:var(--cream);border:2px solid var(--earth-200);border-radius:var(--radius-sm)">
+          <input type="checkbox" id="newCatNeutered" style="width:20px;height:20px;accent-color:var(--earth-500);cursor:pointer"
+            onchange="document.getElementById('neuteredLabel').textContent=this.checked?'已結紮 ✂️':'未結紮';this.parentElement.style.background=this.checked?'var(--moss-light)':'var(--cream)';document.getElementById('newCatNeuterDateWrap').style.display=this.checked?'block':'none'">
+          <span style="font-size:14px;font-weight:700;color:var(--gray-700)" id="neuteredLabel">未結紮</span>
+        </label>
+      </div>
+    </div>
+    <div id="newCatNeuterDateWrap" style="display:none">
+      <div class="input-group">
+        <div class="input-label">✂️ 結紮日期</div>
+        <input type="date" id="newCatNeuterDate" class="input-field">
+      </div>
+    </div>
+    <div class="input-group"><div class="input-label">📊 狀態</div>
+      <select id="newCatStatus" class="input-field">
+        <option value="resident">🏠 住院</option>
+        <option value="medical">🏥 治療中</option>
+        <option value="free_roam">🐾 自由活動</option>
+        <option value="foster">🏠 長租客</option>
+        <option value="pending_adoption">🔍 待送養</option>
+        <option value="adopted">💚 已送養</option>
+      </select>
+    </div>
+
+    <!-- 入住資訊 -->
+    <div style="font-size:12px;font-weight:800;color:#7b4dcc;margin:14px 0 8px;padding:6px 10px;background:var(--lavender);border-radius:10px">📅 入住資訊</div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1">
+        <div class="input-label">📅 入住日</div>
+        <input type="date" id="newCatCheckin" class="input-field">
+      </div>
+      <div class="input-group" style="flex:1">
+        <div class="input-label">📤 退住日</div>
+        <input type="date" id="newCatCheckout" class="input-field">
+      </div>
+    </div>
+
+    <!-- 疫苗與驅蟲 -->
+    <div style="font-size:12px;font-weight:800;color:#27ae60;margin:14px 0 8px;padding:6px 10px;background:var(--mint);border-radius:10px">💉 疫苗與驅蟲</div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1">
+        <div class="input-label">💉 最近疫苗日</div>
+        <input type="date" id="newCatVaccineDate" class="input-field">
+      </div>
+      <div class="input-group" style="flex:1">
+        <div class="input-label">💉 疫苗種類</div>
+        <input type="text" id="newCatVaccineType" class="input-field" placeholder="如：三合一">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1">
+        <div class="input-label">🪱 最近驅蟲日</div>
+        <input type="date" id="newCatDewormDate" class="input-field">
+      </div>
+      <div class="input-group" style="flex:1">
+        <div class="input-label">🪱 驅蟲藥品</div>
+        <input type="text" id="newCatDewormMed" class="input-field" placeholder="如：Advantage">
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">🐾 出籠日期</div>
+      <input type="date" id="newCatReleaseDate" class="input-field">
+    </div>
+
+    <!-- 備注 -->
+    <div style="font-size:12px;font-weight:800;color:var(--gray-600);margin:14px 0 8px;padding:6px 10px;background:var(--gray-100);border-radius:10px">📝 首筆備注（可留空）</div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <div class="input-group" style="flex:0 0 130px">
+        <div class="input-label">📅 備注日期</div>
+        <input type="date" id="newCatNoteDate" class="input-field">
+      </div>
+      <div class="input-group" style="flex:1">
+        <div class="input-label">📝 備注內容</div>
+        <textarea id="newCatNotes" class="input-field" placeholder="個性、特殊狀況…" style="min-height:72px"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveCat()">💾 新增貓咪檔案</button>
+  `;
+  // Set today as default check-in and note date
+  const todayStr = new Date().toISOString().slice(0,10);
+  document.getElementById('newCatCheckin').value  = todayStr;
+  document.getElementById('newCatNoteDate').value = todayStr;
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+function previewCatPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  catPhotoFile = file;
+  const wrap = document.getElementById('catPhotoPreviewWrap');
+  const status = document.getElementById('catPhotoStatus');
+  const area = document.getElementById('catPhotoUploadArea');
+  const reader = new FileReader();
+  reader.onload = e => {
+    wrap.innerHTML = `
+      <div style="position:relative;display:inline-block">
+        <img src="${e.target.result}"
+          style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;display:block">
+        <button onclick="removeCatPhoto(event)"
+          style="position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;
+                 background:rgba(0,0,0,0.55);color:white;border:none;font-size:14px;
+                 cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+      </div>`;
+    area.style.padding = '8px';
+    status.textContent = `✅ ${file.name}（${(file.size/1024).toFixed(0)} KB）`;
+    status.style.color = 'var(--green)';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCatPhoto(e) {
+  e.stopPropagation();
+  catPhotoFile = null;
+  const wrap = document.getElementById('catPhotoPreviewWrap');
+  const status = document.getElementById('catPhotoStatus');
+  const area = document.getElementById('catPhotoUploadArea');
+  wrap.innerHTML = `
+    <div style="font-size:40px">🐱</div>
+    <div style="font-size:13px;font-weight:700;margin-top:6px">點擊上傳貓咪照片</div>
+    <div style="font-size:11px;color:var(--gray-400);margin-top:3px">支援 JPG、PNG、HEIC</div>`;
+  area.style.padding = '0';
+  status.textContent = '';
+  document.getElementById('newCatPhoto').value = '';
+}
+
+async function saveCat() {
+  if (!isAdmin) { requireAdmin(() => saveCat()); return; }
+  const name = document.getElementById('newCatName').value.trim();
+  if (!name) { showToast('⚠️ 請輸入貓咪名字'); return; }
+  const btn = document.querySelector('#addModalContent .btn-primary');
+  btn.disabled = true; btn.textContent = '儲存中…';
+
+  let photoUrl = null;
+  if (catPhotoFile) {
+    try {
+      const ext = catPhotoFile.name.split('.').pop();
+      const fileName = `cats/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadError } = await db.storage.from('cat-photos').upload(fileName, catPhotoFile, { upsert: true });
+      if (!uploadError) {
+        const { data: urlData } = db.storage.from('cat-photos').getPublicUrl(fileName);
+        photoUrl = urlData?.publicUrl || null;
+      } else { showToast('⚠️ 照片上傳失敗，其他資料仍會儲存', true); }
+    } catch(e) { console.warn('Photo upload error:', e); }
+  }
+
+  const isNewRelease  = document.getElementById('newCatStatus').value === 'free_roam';
+  const initWeight    = parseFloat(document.getElementById('newCatWeight').value) || null;
+  const isNeutered    = document.getElementById('newCatNeutered').checked;
+  const neuterDate    = document.getElementById('newCatNeuterDate')?.value || null;
+  const checkin       = document.getElementById('newCatCheckin').value  || null;
+  const checkout      = document.getElementById('newCatCheckout').value || null;
+  const noteDate      = document.getElementById('newCatNoteDate')?.value || null;
+  const vaccineDate   = document.getElementById('newCatVaccineDate').value || null;
+  const vaccineType   = document.getElementById('newCatVaccineType').value.trim() || null;
+  const dewormDate    = document.getElementById('newCatDewormDate').value  || null;
+  const dewormMed     = document.getElementById('newCatDewormMed').value.trim()  || null;
+  const releaseDateIn = document.getElementById('newCatReleaseDate').value || null;
+
+  try {
+    const { data: catData, error } = await db.from('cats').insert({
+      name,
+      gender:       document.getElementById('newCatGender').value,
+      cage_number:  document.getElementById('newCatCage').value.trim()  || null,
+      color:        document.getElementById('newCatColor').value.trim() || null,
+      age_estimate: document.getElementById('newCatAge').value.trim()   || null,
+      status:       document.getElementById('newCatStatus').value,
+      notes:        document.getElementById('newCatNotes').value.trim() || null,
+      photo_url:    photoUrl,
+      is_new_release: !!releaseDateIn || isNewRelease,
+      release_date:   releaseDateIn ? new Date(releaseDateIn).toISOString() : (isNewRelease ? new Date().toISOString() : null),
+      checkin_date:   checkin,
+      checkout_date:  checkout,
+      is_neutered:    isNeutered,
+      neuter_date:    isNeutered ? (neuterDate || null) : null,
+      note_date:      noteDate || null,
+    }).select('id').single();
+    if (error) throw error;
+
+    // Save initial weight if provided
+    if (initWeight && catData?.id) {
+      await db.from('medical_logs').insert({
+        cat_id: catData.id, log_type: 'weight',
+        weight_kg: initWeight,
+        last_weight_check: new Date().toISOString(),
+        description: '建檔時登錄體重',
+      });
+    }
+    // Save vaccine log if provided
+    if (vaccineDate && catData?.id) {
+      await db.from('medical_logs').insert({
+        cat_id: catData.id, log_type: 'vaccine',
+        vaccine_name: vaccineType, vaccine_date: vaccineDate,
+        description: '新增貓咪時登錄',
+      });
+    }
+    // Save deworming log if provided
+    if (dewormDate && catData?.id) {
+      await db.from('medical_logs').insert({
+        cat_id: catData.id, log_type: 'other',
+        medicine_name: dewormMed || '驅蟲藥',
+        medicine_start_date: dewormDate,
+        description: '驅蟲紀錄',
+      });
+    }
+
+    // Save first note if provided
+    const firstNoteContent = document.getElementById('newCatNotes')?.value.trim();
+    if (firstNoteContent && catData?.id) {
+      const firstNoteDate = document.getElementById('newCatNoteDate')?.value || new Date().toISOString().slice(0,10);
+      await db.from('cat_notes').insert({
+        cat_id: catData.id,
+        note_date: firstNoteDate,
+        content: firstNoteContent,
+      });
+    }
+
+    showToast(photoUrl ? '✅ 貓咪與照片已儲存！' : '✅ 貓咪已新增！');
+    closeModal('addCatModal');
+    catPhotoFile = null;
+    await loadAllCats();
+    renderMedPage();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '💾 新增貓咪檔案';
+    showToast('❌ 新增失敗：' + e.message, true);
+  }
+}
+
+function openAddMedLog(catId, catName) {
+  closeModal('catDetailModal');
+  document.getElementById('addModalTitle').textContent = `💊 新增醫療紀錄 - ${catName}`;
+  document.getElementById('addModalContent').innerHTML = `
+    <div class="input-group"><div class="input-label">📋 紀錄類型</div>
+      <select id="medLogType" class="input-field" onchange="toggleMedFields(this.value)">
+        <option value="medication">💊 用藥</option>
+        <option value="vaccine">💉 疫苗</option>
+        <option value="checkup">🏥 看診</option>
+        <option value="weight">⚖️ 體重</option>
+        <option value="symptom">🌡️ 症狀</option>
+      </select>
+    </div>
+    <div id="medFields">
+      <div class="input-group"><div class="input-label">💊 藥物名稱</div><input type="text" id="medName" class="input-field" placeholder="藥物名稱"></div>
+      <div style="display:flex;gap:8px">
+        <div class="input-group" style="flex:1"><div class="input-label">📏 劑量</div><input type="text" id="medDose" class="input-field" placeholder="如：1/4顆"></div>
+        <div class="input-group" style="flex:1"><div class="input-label">🎒 藥包數</div><input type="number" id="medBags" class="input-field" placeholder="0" min="0"></div>
+      </div>
+      <div class="input-group"><div class="input-label">⏰ 餵藥時段</div>
+        <div style="display:flex;gap:8px">
+          ${['morning','noon','evening'].map(t => `<label style="display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;cursor:pointer">
+            <input type="checkbox" value="${t}" id="timing_${t}">
+            ${{morning:'🌅 早',noon:'☀️ 中',evening:'🌙 晚'}[t]}
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="input-group"><div class="input-label">📝 說明</div><textarea id="medDesc" class="input-field" placeholder="詳細描述…"></textarea></div>
+    <button class="btn btn-primary btn-full" onclick="saveMedLog('${catId}')">💾 儲存紀錄</button>
+  `;
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+function openAddWeightLog(catId, catName) {
+  closeModal('catDetailModal');
+  document.getElementById('addModalTitle').textContent = `⚖️ 記錄體重 - ${catName}`;
+  document.getElementById('addModalContent').innerHTML = `
+    <div class="input-group"><div class="input-label">⚖️ 體重 (kg)</div>
+      <input type="number" id="weightVal" class="input-field" placeholder="例：3.5" step="0.1" min="0">
+    </div>
+    <div class="input-group" style="background:var(--yellow);padding:12px;border-radius:var(--radius-sm)">
+      <div class="toggle-wrap">
+        <button class="toggle" id="weightIntervalToggle" onclick="this.classList.toggle('on')"></button>
+        <span style="font-size:13px;font-weight:700">每兩天提醒量體重</span>
+      </div>
+    </div>
+    <div class="input-group"><div class="input-label">📝 備注</div><input type="text" id="weightNote" class="input-field" placeholder="狀況描述…"></div>
+    <button class="btn btn-primary btn-full" onclick="saveWeightLog('${catId}')">💾 儲存體重</button>
+  `;
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+function openWeightModal(catId) {
+  const cat = allCats.find(c => c.id === catId);
+  if (cat) openAddWeightLog(catId, cat.name);
+}
+
+async function saveMedLog(catId) {
+  const type = document.getElementById('medLogType').value;
+  const timings = ['morning','noon','evening'].filter(t => document.getElementById('timing_'+t)?.checked);
+  try {
+    const { error } = await db.from('medical_logs').insert({
+      cat_id: catId, log_type: type,
+      medicine_name: document.getElementById('medName')?.value.trim() || null,
+      medicine_dose: document.getElementById('medDose')?.value.trim() || null,
+      bag_count: parseInt(document.getElementById('medBags')?.value) || 0,
+      medicine_timing: timings.length > 0 ? timings : null,
+      description: document.getElementById('medDesc').value.trim() || null,
+      log_date: new Date().toISOString()
+    });
+    if (error) throw error;
+    showToast('✅ 醫療紀錄已儲存！');
+    closeModal('addCatModal');
+    loadDashboard();
+  } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+}
+
+async function saveWeightLog(catId) {
+  const weight = parseFloat(document.getElementById('weightVal').value);
+  if (!weight) { showToast('⚠️ 請輸入體重'); return; }
+  const needInterval = document.getElementById('weightIntervalToggle').classList.contains('on');
+  try {
+    const { error } = await db.from('medical_logs').insert({
+      cat_id: catId, log_type: 'weight',
+      weight_kg: weight,
+      weight_check_interval_hours: needInterval ? 48 : null,
+      last_weight_check: new Date().toISOString(),
+      description: document.getElementById('weightNote').value.trim() || null,
+      log_date: new Date().toISOString()
+    });
+    if (error) throw error;
+    showToast('✅ 體重已記錄！');
+    closeModal('addCatModal');
+    loadDashboard();
+  } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+}
+
+// ===== FEEDING LOGS =====
+async function loadFeedingCatSelect() {
+  if (allCats.length === 0) await loadAllCats();
+  const sel = document.getElementById('feedingCat');
+  sel.innerHTML = `<option value="">選擇貓咪…</option>` +
+    allCats.map(c => `<option value="${c.id}">${c.name}${c.nickname ? ' ('+c.nickname+')' : ''}</option>`).join('');
+}
+
+function selectTiming(timing, btn) {
+  selectedTiming = timing;
+  document.querySelectorAll('#page-feeding .timing-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setAppetite(val) {
+  selectedAppetite = val;
+  const labels = ['','😿 沒食慾','😒 少量','😐 普通','😋 不錯','🤤 超愛吃！'];
+  document.querySelectorAll('.appetite-star').forEach(s => {
+    s.classList.toggle('filled', parseInt(s.dataset.val) <= val);
+  });
+  document.getElementById('appetiteLabel').textContent = labels[val];
+}
+
+function previewPhoto(input) {
+  photoFile = input.files[0];
+  if (!photoFile) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('photoPreviewArea').innerHTML = `<img src="${e.target.result}" class="photo-preview">`;
+  };
+  reader.readAsDataURL(photoFile);
+}
+
+async function submitFeedingLog() {
+  const catId = document.getElementById('feedingCat').value;
+  if (!catId) { showToast('⚠️ 請選擇貓咪'); return; }
+  const cat = allCats.find(c => c.id === catId);
+  let photoUrl = null;
+  if (photoFile) {
+    try {
+      const fileName = `feeding/${catId}/${Date.now()}_${photoFile.name}`;
+      const { data: uploadData, error: uploadError } = await db.storage.from('cat-photos').upload(fileName, photoFile);
+      if (!uploadError) {
+        const { data: urlData } = db.storage.from('cat-photos').getPublicUrl(fileName);
+        photoUrl = urlData?.publicUrl;
+      }
+    } catch(e) { console.warn('Photo upload failed:', e); }
+  }
+  try {
+    const { error } = await db.from('feeding_logs').insert({
+      cat_id: catId, cat_name: cat?.name,
+      feeding_time: selectedTiming,
+      food_type: document.getElementById('foodType').value.trim() || null,
+      food_amount: document.getElementById('foodAmount').value.trim() || null,
+      appetite_level: selectedAppetite || null,
+      photo_url: photoUrl,
+      notes: document.getElementById('feedNotes').value.trim() || null,
+      volunteer_name: document.getElementById('volunteerName').value.trim() || null,
+      fed_at: new Date().toISOString()
+    });
+    if (error) throw error;
+    showToast('✅ 餵食紀錄已儲存！');
+    document.getElementById('feedingCat').value = '';
+    document.getElementById('foodType').value = '';
+    document.getElementById('foodAmount').value = '';
+    document.getElementById('feedNotes').value = '';
+    document.getElementById('photoPreviewArea').innerHTML = '📷 點擊上傳餵食照片';
+    selectedAppetite = 0;
+    setAppetite(0);
+    photoFile = null;
+    loadTodayFeeding();
+  } catch(e) { showToast('❌ 儲存失敗：' + e.message, true); }
+}
+
+async function loadTodayFeeding() {
+  const container = document.getElementById('todayFeedingList');
+  const today = new Date().toISOString().slice(0,10);
+  try {
+    const { data, error } = await db.from('feeding_logs')
+      .select('*').gte('fed_at', today+'T00:00:00').order('fed_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-emoji">🍚</div><p>今天還沒有餵食紀錄</p></div>`;
+      return;
+    }
+    const timingLabel = { morning:'🌅 早上', noon:'☀️ 中午', evening:'🌙 晚上', other:'🍽️ 其他' };
+    const appetiteLabel = ['','😿','😒','😐','😋','🤤'];
+    container.innerHTML = data.map(log => `
+      <div class="card" style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--pink-500)">${log.cat_name || '貓咪'}</div>
+          <span class="badge badge-${log.feeding_time}">${timingLabel[log.feeding_time] || log.feeding_time}</span>
+        </div>
+        <div style="display:flex;gap:12px;font-size:12px;color:var(--gray-600);flex-wrap:wrap">
+          ${log.food_type ? `<span>🥣 ${log.food_type}</span>` : ''}
+          ${log.food_amount ? `<span>📏 ${log.food_amount}</span>` : ''}
+          ${log.appetite_level ? `<span>${appetiteLabel[log.appetite_level]} 食慾${log.appetite_level}/5</span>` : ''}
+          ${log.volunteer_name ? `<span>👤 ${log.volunteer_name}</span>` : ''}
+        </div>
+        ${log.notes ? `<div style="font-size:12px;color:var(--gray-400);margin-top:6px">📝 ${log.notes}</div>` : ''}
+        ${log.photo_url ? `<img src="${log.photo_url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;margin-top:8px">` : ''}
+      </div>`).join('');
+  } catch(e) { container.innerHTML = `<div class="empty-state"><p>❌ 載入失敗</p></div>`; }
+}
+
+// ===== ALL CATS =====
+async function loadAllCats() {
+  try {
+    const { data } = await db.from('cats').select('*').order('name');
+    allCats = data || [];
+    renderCatCards(allCats, document.getElementById('fullCatList'));
+  } catch(e) {}
+}
+
+// ===== MODAL UTILS =====
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+});
+
+// ===== TOAST =====
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#e74c3c' : 'var(--gray-800)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ===== FORMAT UTILS =====
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+}
+function formatDate(ts) {
+  if (!ts) return '-';
+  const d = new Date(ts);
+  return `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+}
+
+// ===== EDIT CAT MODAL =====
+function openEditCatModal(catId) {
+  if (!isAdmin) { requireAdmin(() => openEditCatModal(catId)); return; }
+  const cat = allCats.find(c => c.id === catId);
+  if (!cat) return;
+  closeModal('catDetailModal');
+  document.getElementById('addModalTitle').textContent = `✏️ 編輯資料 - ${cat.name}`;
+  document.getElementById('addModalContent').innerHTML = `
+    <div class="input-group"><div class="input-label">🐱 名字 *</div>
+      <input type="text" id="editCatName" class="input-field" value="${cat.name||''}"></div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1"><div class="input-label">🎀 性別</div>
+        <select id="editCatGender" class="input-field">
+          <option value="unknown" ${cat.gender==='unknown'?'selected':''}>未知</option>
+          <option value="male"    ${cat.gender==='male'   ?'selected':''}>公</option>
+          <option value="female"  ${cat.gender==='female' ?'selected':''}>母</option>
+        </select></div>
+      <div class="input-group" style="flex:1"><div class="input-label">📍 籠位</div>
+        <input type="text" id="editCatCage" class="input-field" value="${cat.cage_number||''}"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1"><div class="input-label">🎨 毛色</div>
+        <input type="text" id="editCatColor" class="input-field" value="${cat.color||''}"></div>
+      <div class="input-group" style="flex:1"><div class="input-label">🎂 年齡</div>
+        <input type="text" id="editCatAge" class="input-field" value="${cat.age_estimate||''}"></div>
+    </div>
+    <div class="input-group">
+      <div class="input-label">✂️ 是否結紮</div>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;
+             background:var(--cream);border:2px solid var(--earth-200);border-radius:var(--radius-sm)">
+        <input type="checkbox" id="editCatNeutered" ${cat.is_neutered?'checked':''} style="width:20px;height:20px;accent-color:var(--earth-500)"
+          onchange="document.getElementById('editNeuteredLabel').textContent=this.checked?'已結紮 ✂️':'未結紮';this.parentElement.style.background=this.checked?'var(--moss-light)':'var(--cream)';document.getElementById('editNeuterDateWrap').style.display=this.checked?'block':'none'">
+        <span id="editNeuteredLabel" style="font-size:14px;font-weight:700">${cat.is_neutered?'已結紮 ✂️':'未結紮'}</span>
+      </label>
+    </div>
+    <div id="editNeuterDateWrap" style="display:${cat.is_neutered?'block':'none'}">
+      <div class="input-group">
+        <div class="input-label">✂️ 結紮日期</div>
+        <input type="date" id="editCatNeuterDate" class="input-field" value="${cat.neuter_date||''}">
+      </div>
+    </div>
+    <div class="input-group"><div class="input-label">📊 狀態</div>
+      <select id="editCatStatus" class="input-field">
+        <option value="resident"         ${cat.status==='resident'        ?'selected':''}>🏠 住院</option>
+        <option value="medical"          ${cat.status==='medical'         ?'selected':''}>🏥 治療中</option>
+        <option value="free_roam"        ${cat.status==='free_roam'       ?'selected':''}>🐾 自由活動</option>
+        <option value="foster"           ${cat.status==='foster'          ?'selected':''}>🏠 長租客</option>
+        <option value="pending_adoption" ${cat.status==='pending_adoption'?'selected':''}>🔍 待送養</option>
+        <option value="adopted"          ${cat.status==='adopted'         ?'selected':''}>💚 已送養</option>
+      </select></div>
+    <div style="display:flex;gap:10px">
+      <div class="input-group" style="flex:1"><div class="input-label">📅 入住日</div>
+        <input type="date" id="editCatCheckin" class="input-field" value="${cat.checkin_date||''}"></div>
+      <div class="input-group" style="flex:1"><div class="input-label">📤 退住日</div>
+        <input type="date" id="editCatCheckout" class="input-field" value="${cat.checkout_date||''}"></div>
+    </div>
+    <div class="input-group"><div class="input-label">🐾 出籠日期</div>
+      <input type="date" id="editCatRelease" class="input-field" value="${cat.release_date?cat.release_date.slice(0,10):''}"></div>
+    <div style="font-size:12px;font-weight:800;color:var(--gray-600);margin:10px 0 8px;padding:6px 10px;background:var(--gray-100);border-radius:10px">📝 新增備注（可留空）</div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <div class="input-group" style="flex:0 0 130px">
+        <div class="input-label">📅 備注日期</div>
+        <input type="date" id="editCatNoteDate" class="input-field" value="${new Date().toISOString().slice(0,10)}">
+      </div>
+      <div class="input-group" style="flex:1">
+        <div class="input-label">📝 備注內容</div>
+        <textarea id="editCatNotes" class="input-field" style="min-height:72px" placeholder="新增一筆備注…"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveEditCat('${catId}')">💾 儲存修改</button>
+  `;
+  const neuteredLabel = document.getElementById('editNeuteredLabel');
+  const checkbox = document.getElementById('editCatNeutered');
+  if (checkbox && cat.is_neutered) checkbox.parentElement.style.background = 'var(--moss-light)';
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+async function saveEditCat(catId) {
+  const name = document.getElementById('editCatName').value.trim();
+  if (!name) { showToast('⚠️ 名字不可為空'); return; }
+  const btn = document.querySelector('#addModalContent .btn-primary');
+  btn.disabled = true; btn.textContent = '儲存中…';
+  const releaseVal = document.getElementById('editCatRelease').value || null;
+  try {
+    const { error } = await db.from('cats').update({
+      name,
+      gender:        document.getElementById('editCatGender').value,
+      cage_number:   document.getElementById('editCatCage').value.trim()    || null,
+      color:         document.getElementById('editCatColor').value.trim()   || null,
+      age_estimate:  document.getElementById('editCatAge').value.trim()     || null,
+      status:        document.getElementById('editCatStatus').value,
+      is_neutered:   document.getElementById('editCatNeutered').checked,
+      checkin_date:  document.getElementById('editCatCheckin').value        || null,
+      checkout_date: document.getElementById('editCatCheckout').value       || null,
+      release_date:  releaseVal ? new Date(releaseVal).toISOString() : null,
+      is_new_release:!!releaseVal,
+      is_neutered:   document.getElementById('editCatNeutered').checked,
+      neuter_date:   document.getElementById('editCatNeutered').checked ? (document.getElementById('editCatNeuterDate')?.value || null) : null,
+      notes:         null,  // 備注已移至 cat_notes 表，保留欄位相容性
+      updated_at:    new Date().toISOString(),
+    }).eq('id', catId);
+    if (error) throw error;
+    // Save new note entry if provided
+    const newNoteContent = document.getElementById('editCatNotes')?.value.trim();
+    if (newNoteContent) {
+      const newNoteDate = document.getElementById('editCatNoteDate')?.value || new Date().toISOString().slice(0,10);
+      await db.from('cat_notes').insert({
+        cat_id: catId,
+        note_date: newNoteDate,
+        content: newNoteContent,
+      });
+    }
+
+    showToast('✅ 資料已更新！');
+    closeModal('addCatModal');
+    await loadAllCats();
+    renderMedPage();
+    loadDashboard();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '💾 儲存修改';
+    showToast('❌ 更新失敗：' + e.message, true);
+  }
+}
+
+// ===== CAT NOTES =====
+async function loadCatNotes(catId) {
+  const section = document.getElementById(`catNotesSection-${catId}`);
+  if (!section) return;
+  try {
+    const { data, error } = await db.from('cat_notes')
+      .select('*').eq('cat_id', catId)
+      .order('note_date', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const notes = data || [];
+    if (notes.length === 0) {
+      section.innerHTML = `<div style="color:var(--gray-400);font-size:12px;font-weight:700;padding:8px 0;text-align:center">尚無備注紀錄</div>`;
+      return;
+    }
+    section.innerHTML = `
+      <div style="font-family:'Fredoka One',cursive;font-size:15px;color:var(--earth-500);margin:12px 0 8px;display:flex;align-items:center;gap:6px">
+        📝 備注紀錄
+        <span style="font-size:12px;font-family:'Nunito',sans-serif;font-weight:700;color:var(--gray-400)">${notes.length} 筆</span>
+      </div>
+      <div style="border-radius:var(--radius-md);overflow:hidden;border:1.5px solid var(--earth-200)">
+        ${notes.map((n, i) => `
+          <div id="note-item-${n.id}" style="padding:12px 14px;background:${i % 2 === 0 ? 'white' : 'var(--sand-light)'};border-bottom:${i < notes.length-1 ? '1px solid var(--earth-100)' : 'none'}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:11px;font-weight:800;color:var(--earth-400);background:var(--earth-100);padding:2px 8px;border-radius:10px">
+                📅 ${formatDate(n.note_date)}
+              </span>
+              <div id="note-actions-${n.id}" style="display:flex;gap:5px">
+                <button class="btn btn-sm btn-warning" onclick="editNoteItem('${n.id}')" style="padding:4px 8px;font-size:11px">✏️</button>
+                <button class="btn btn-sm btn-danger"  onclick="deleteNoteItem('${n.id}','${catId}')" style="padding:4px 8px;font-size:11px">🗑️</button>
+              </div>
+            </div>
+            <div id="note-view-${n.id}" style="font-size:13px;font-weight:600;color:var(--gray-800);line-height:1.7;white-space:pre-wrap;word-break:break-word">${n.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+            <div id="note-edit-${n.id}" style="display:none;margin-top:8px">
+              <input type="date" id="note-date-${n.id}" class="input-field" value="${n.note_date}" style="margin-bottom:6px">
+              <textarea id="note-ta-${n.id}" class="input-field" style="min-height:70px;white-space:pre-wrap">${n.content.replace(/</g,'&lt;')}</textarea>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn btn-sm btn-primary" style="flex:1" onclick="saveNoteEdit('${n.id}','${catId}')">💾 儲存</button>
+                <button class="btn btn-sm btn-secondary" style="flex:1" onclick="cancelNoteEdit('${n.id}')">取消</button>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } catch(e) { section.innerHTML = `<div style="color:var(--terracotta);font-size:12px">備注載入失敗</div>`; }
+}
+
+function editNoteItem(id) {
+  document.getElementById(`note-view-${id}`).style.display = 'none';
+  document.getElementById(`note-edit-${id}`).style.display = 'block';
+  document.getElementById(`note-actions-${id}`).style.opacity = '0.3';
+  document.getElementById(`note-actions-${id}`).style.pointerEvents = 'none';
+}
+function cancelNoteEdit(id) {
+  document.getElementById(`note-view-${id}`).style.display = 'block';
+  document.getElementById(`note-edit-${id}`).style.display = 'none';
+  document.getElementById(`note-actions-${id}`).style.opacity = '1';
+  document.getElementById(`note-actions-${id}`).style.pointerEvents = 'auto';
+}
+async function saveNoteEdit(id, catId) {
+  const newDate    = document.getElementById(`note-date-${id}`).value;
+  const newContent = document.getElementById(`note-ta-${id}`).value.trim();
+  if (!newContent) { showToast('⚠️ 備注不可為空'); return; }
+  try {
+    const { error } = await db.from('cat_notes').update({ note_date: newDate, content: newContent }).eq('id', id);
+    if (error) throw error;
+    showToast('✅ 備注已更新！');
+    loadCatNotes(catId);
+  } catch(e) { showToast('❌ 更新失敗：' + e.message, true); }
+}
+async function deleteNoteItem(id, catId) {
+  if (!confirm('確定要刪除這筆備注嗎？')) return;
+  try {
+    const { error } = await db.from('cat_notes').delete().eq('id', id);
+    if (error) throw error;
+    showToast('🗑️ 備注已刪除');
+    loadCatNotes(catId);
+  } catch(e) { showToast('❌ 刪除失敗：' + e.message, true); }
+}
+
+function openAddNoteModal(catId, catName) {
+  document.getElementById('addModalTitle').textContent = `📝 新增備注 - ${catName}`;
+  document.getElementById('addModalContent').innerHTML = `
+    <div class="input-group">
+      <div class="input-label">📅 備注日期</div>
+      <input type="date" id="newNoteDate" class="input-field" value="${new Date().toISOString().slice(0,10)}">
+    </div>
+    <div class="input-group">
+      <div class="input-label">📝 備注內容</div>
+      <textarea id="newNoteContent" class="input-field"
+        style="min-height:130px;white-space:pre-wrap;line-height:1.7"
+        placeholder="輸入備注內容…"></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveNewNote('${catId}')">💾 儲存備注</button>
+  `;
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+async function saveNewNote(catId) {
+  const noteDate    = document.getElementById('newNoteDate').value;
+  const noteContent = document.getElementById('newNoteContent').value.trim();
+  if (!noteContent) { showToast('⚠️ 備注內容不可為空'); return; }
+  const btn = document.querySelector('#addModalContent .btn-primary');
+  btn.disabled = true; btn.textContent = '儲存中…';
+  try {
+    const { error } = await db.from('cat_notes').insert({
+      cat_id: catId, note_date: noteDate, content: noteContent,
+    });
+    if (error) throw error;
+    showToast('✅ 備注已新增！');
+    closeModal('addCatModal');
+    loadCatNotes(catId);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '💾 儲存備注';
+    showToast('❌ 儲存失敗：' + e.message, true);
+  }
+}
+
+// ===== UPDATE CAT PHOTO =====
+function openUpdateCatPhoto(catId, catName) {
+  closeModal('catDetailModal');
+  catPhotoFile = null;
+  document.getElementById('addModalTitle').textContent = `📸 更換照片 - ${catName}`;
+  document.getElementById('addModalContent').innerHTML = `
+    <input type="file" id="updateCatPhoto" accept="image/*" onchange="previewUpdateCatPhoto(this)" style="display:none">
+    <div id="updatePhotoArea" onclick="document.getElementById('updateCatPhoto').click()"
+      style="border:2px dashed var(--pink-200);border-radius:var(--radius-md);background:var(--pink-50);
+             cursor:pointer;min-height:150px;display:flex;align-items:center;justify-content:center;
+             flex-direction:column;gap:6px;color:var(--pink-300);transition:all 0.2s;padding:20px">
+      <div id="updatePhotoPreview" style="text-align:center">
+        <div style="font-size:48px">📷</div>
+        <div style="font-size:14px;font-weight:700;margin-top:8px">點擊選擇新照片</div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:4px">JPG、PNG、HEIC 均可</div>
+      </div>
+    </div>
+    <div id="updatePhotoStatus" style="font-size:12px;text-align:center;margin-top:8px;font-weight:700;color:var(--gray-400)"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:14px" id="updatePhotoBtn" onclick="saveUpdateCatPhoto('${catId}','${catName}')" disabled>
+      📸 儲存新照片
+    </button>
+  `;
+  document.getElementById('addCatModal').classList.add('open');
+}
+
+function previewUpdateCatPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  catPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('updatePhotoPreview').innerHTML =
+      `<img src="${e.target.result}" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px">`;
+    document.getElementById('updatePhotoArea').style.padding = '8px';
+    document.getElementById('updatePhotoStatus').textContent = `✅ ${file.name}（${(file.size/1024).toFixed(0)} KB）`;
+    document.getElementById('updatePhotoStatus').style.color = 'var(--green)';
+    document.getElementById('updatePhotoBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveUpdateCatPhoto(catId, catName) {
+  if (!catPhotoFile) { showToast('⚠️ 請先選擇照片'); return; }
+  const btn = document.getElementById('updatePhotoBtn');
+  btn.disabled = true; btn.textContent = '上傳中…';
+  try {
+    const ext = catPhotoFile.name.split('.').pop();
+    const fileName = `cats/${catId}_${Date.now()}.${ext}`;
+    const { error: uploadError } = await db.storage.from('cat-photos').upload(fileName, catPhotoFile, { upsert: true });
+    if (uploadError) throw uploadError;
+    const { data: urlData } = db.storage.from('cat-photos').getPublicUrl(fileName);
+    const photoUrl = urlData?.publicUrl;
+    const { error: updateError } = await db.from('cats').update({ photo_url: photoUrl }).eq('id', catId);
+    if (updateError) throw updateError;
+    showToast(`✅ ${catName} 的照片已更新！`);
+    closeModal('addCatModal');
+    catPhotoFile = null;
+    await loadAllCats();
+    renderMedPage();
+    loadDashboard();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '📸 儲存新照片';
+    showToast('❌ 上傳失敗：' + e.message, true);
+  }
+}
+
+// ===== FAB INIT =====
+document.getElementById('fabBtn').style.display = 'none';
+
+// ===== SCROLL TO TOP =====
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.querySelector('.main-content') && document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+  btn.classList.toggle('visible', window.scrollY > 180);
+}, { passive: true });
+
+// Also listen on main-content in case it scrolls independently
+document.addEventListener('DOMContentLoaded', () => {
+  const mc = document.querySelector('.main-content');
+  if (mc) {
+    mc.addEventListener('scroll', () => {
+      const btn = document.getElementById('scrollTopBtn');
+      if (!btn) return;
+      btn.classList.toggle('visible', mc.scrollTop > 180);
+    }, { passive: true });
+  }
+});
+</script>
+</body>
+</html>
